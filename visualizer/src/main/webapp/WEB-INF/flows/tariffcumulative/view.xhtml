@@ -1,0 +1,348 @@
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	template="/WEB-INF/layouts/visualizer/master.xhtml">
+
+	<ui:define name="title">Tariff market - aggregate scores</ui:define>
+
+	<ui:define name="headInclude">
+		<script type="text/javascript">
+			var tariffDynData;
+			var tariffDynDataOneTimeslot;
+	 	 	$(document).ready(
+				function() {
+					var appending = new Array("PRICE(&euro;)", "ENERGY(kWh)", "CUST");
+					if (#{logParametersBean.isReplayerMode}) {
+						tariffDynData = dynDataGraph('tariffDynData',#{tariffMarketBeanReplayer.tariffDynData},'',getTariffDynYAxisData('Customer count', "Price (&euro;)","Traded energy (kWh)"), appending);
+					} else {
+						tariffDynData = dynDataGraph('tariffDynData',#{tariffMarketBean.tariffDynData},'',getTariffDynYAxisData('Customer count', "Price (&euro;)","Traded energy (kWh)"), appending);
+					}
+				});
+	  
+	  	
+			function handleTariffPush(data) {
+		  		$(document).ready(
+					function() {
+						var array = jQuery.parseJSON(data);
+						var cntTariffDynData = 0;
+						jQuery.each(array, function() {
+			  				var pushObject = this;
+							//  console.log(pushObject);
+			 				//known ordering: profit, energy, cust
+			  				// 0 is the first broker, known ordering.
+			  				tariffDynData.series[cntTariffDynData++].addPoint([pushObject["millis"],pushObject["profit"]],false);
+			  				tariffDynData.series[cntTariffDynData++].addPoint([pushObject["millis"],pushObject["energy"]],false);
+			  				tariffDynData.series[cntTariffDynData++].addPoint([pushObject["millis"],pushObject["customerCount"],false]);
+						});
+					tariffDynData.redraw();
+				});
+    		}
+	
+			// Zurueckgesprungen im Diagramm
+			function handlePushTsChoosenBackward(data) {
+
+				var pushObjects = jQuery.parseJSON(data);
+		
+				var index = 0;
+				var i = 0;
+				var tsMillis;
+				var indexPoints;
+				var selectedRange = tariffDynData.rangeSelector.selected;
+				var seriesLength = tariffDynData.series.length - 1;
+ 				var visibleSeries = [];
+		
+				var index2 = 0;
+				var cnt = 0;
+
+				// Range Selector auf ALL, sonst fehlen Werte
+				tariffDynData.rangeSelector.clickButton(5, 5, true);
+		
+				while (pushObjects.length > index) {
+			
+		    		var pushObject = pushObjects[index];
+		    
+ 					if (!tariffDynData.series[index].visible) {
+ 						tariffDynData.series[index].setVisible(true);
+ 						visibleSeries.push(false);
+ 					} else {
+ 						visibleSeries.push(true);
+ 					}
+ 			
+ 					tariffDynData.series[index].setData(pushObject, false);
+		    
+		    		index++;
+				}
+		
+				var visibleLengths = visibleSeries.length;
+				for (var i = 0; i &lt; visibleLengths; i++) {
+					if (tariffDynData.series[i] !== undefined) {
+						tariffDynData.series[i].setVisible(visibleSeries[i], false);
+					}
+				}
+		
+				tariffDynData.redraw();
+				tariffDynData.rangeSelector.clickButton(selectedRange, selectedRange, true);
+		
+// 		var pushArray = jQuery.parseJSON(data);
+// 		var index = 0;
+// 		var i = 0;
+// 		var tsMillis;
+// 		var indexPoints;
+// 		var selectedRange = tariffDynData.rangeSelector.selected;
+// 		var seriesLength = tariffDynData.series.length - 1;
+//  		var visibleSeries = [];
+		
+// // 		// Auf All setzen, damit alle Werte geloescht werden koennen
+// // 		// Ansonsten z.B. range auf 1w und dann werden nich alle Werte im Diagramm angezeigt
+// // 		// Dadurch kommt dann beim loeschen die Meldung, distributionDynDataOneTimeslot.series[index].points[0].remove(false)
+// // 		// is not a function.
+// // 		// Es koennen vom Broker Model fuer eine Ts Werte fehlen, deswegen hat die obige Loesung
+// // 		// auch Probleme mit is not defined geworfen
+// // 		// -> Series unterschiedliche Laenge
+// 		tariffDynData.rangeSelector.clickButton(5, 5, true);
+ 		
+//  		while (index &lt;= seriesLength) {
+ 			
+//  			if (!tariffDynData.series[index].visible) {
+//  				tariffDynData.series[index].setVisible(true);
+//  				visibleSeries.push(false);
+//  			} else {
+//  				visibleSeries.push(true);
+//  			}
+ 			
+//  	 		indexPoints = tariffDynData.series[index].points.length - 1;
+
+//  			i = 0;
+ 	 						
+//  	 		while (indexPoints >= 0) {
+
+//  	 			if (pushArray.indexOf(tariffDynData.series[index].points[indexPoints].x) >= 0) {
+
+//  	 				tariffDynData.series[index].points[indexPoints].remove(false);
+//  	 			}
+ 	 			
+//  	 			indexPoints--;
+//  	 		}
+
+//  			index++;
+//  		}
+ 		
+// 		var visibleLengths = visibleSeries.length;
+// 		for (var i = 0; i &lt; visibleLengths; i++) {
+// 			if (tariffDynData.series[i] !== undefined) {
+// 				tariffDynData.series[i].setVisible(visibleSeries[i], false);
+// 			}
+// 		}
+		
+// 		tariffDynData.redraw();
+// 		tariffDynData.rangeSelector.clickButton(selectedRange, selectedRange, true);
+			}
+	
+// 	// Zurueckgesprungen im Diagramm
+// 	function handlePushTsChoosenBackward(data) {
+		
+// 		var pushArray = jQuery.parseJSON(data);
+// 		var index = 0;
+// 		var i = 0;
+// 		var tsMillis;
+// 		var indexPoints;
+// 		var selectedRange = tariffDynData.rangeSelector.selected;
+// 		var seriesLength = tariffDynData.series.length - 1;
+ 			
+// // 		// Auf All setzen, damit alle Werte geloescht werden koennen
+// // 		// Ansonsten z.B. range auf 1w und dann werden nich alle Werte im Diagramm angezeigt
+// // 		// Dadurch kommt dann beim loeschen die Meldung, distributionDynDataOneTimeslot.series[index].points[0].remove(false)
+// // 		// is not a function.
+// // 		// Es koennen vom Broker Model fuer eine Ts Werte fehlen, deswegen hat die obige Loesung
+// // 		// auch Probleme mit is not defined geworfen
+// // 		// -> Series unterschiedliche Laenge
+// 		tariffDynData.rangeSelector.clickButton(5, 5, true);
+ 		
+//  		while (index &lt;= seriesLength) {
+ 	 		
+//  	 		indexPoints = tariffDynData.series[index].points.length - 1;
+//  			i = 0;
+ 			
+//  			// Alle Millis Ts durchlaufen
+//  	 		while (i &lt; pushArray.length) {
+ 	 			
+//  	 			tsMillis = pushArray[i];
+ 	 				
+//  	 			// Entspricht der letzte Punkt im Diagramm (TsMillis Wert auf der x-Achse)
+//  	 			// den zu loeschenden TsMillisWert. Diese werden rueckwaerts durchgelaufen
+//  	 			// und im Diagramm als Points geloescht. Beachtet auch, dass im Diagramm
+//  	 			// fuer einen Ts der Punkt im Diagramm fehlen kann.
+//  	 			if (tariffDynData.series[index].points[indexPoints].x == tsMillis) {
+ 	 					
+//  	 				tariffDynData.series[index].points[indexPoints].remove(false);
+//  	 	 			indexPoints--;
+//  	 			} 	 	
+ 	 			
+//  	 			i++;
+//  	 		}
+
+//  			index++;
+//  		}
+ 		
+//  		tariffDynData.redraw();
+//  		tariffDynData.rangeSelector.clickButton(selectedRange, selectedRange, true);
+// 	}
+	
+    		// Vorspringen im Diagramm
+			function handleTariffTransactionPushTsChoosen(data) {
+		
+				var pushObjects = jQuery.parseJSON(data);
+				var index = 0;
+				var index2 = 0;
+				var cnt = 0;
+				var selectedRange = tariffDynData.rangeSelector.selected;
+				var visibleSeries = [];
+		
+				index = 0;
+			
+				while (pushObjects.length > index) {
+			
+		    		var pushObject = pushObjects[index];
+		    
+		    		index2 = 0;
+		    		cnt = 0;
+		    
+		    		while (pushObject.length > index2) {
+
+		    			var object = pushObject[index2];
+		    			var indexSeries = object["index"];
+
+	 					if (!tariffDynData.series[indexSeries].visible) {
+	 						tariffDynData.series[indexSeries].setVisible(true);
+	 						visibleSeries.push(false);
+	 					} else {
+	 						visibleSeries.push(true);
+	 					}
+	 			
+	 					tariffDynData.series[indexSeries++].addPoint([object["millis"],object["profit"]],false);
+		    
+	 					if (!tariffDynData.series[indexSeries].visible) {
+	 						tariffDynData.series[indexSeries].setVisible(true);
+	 						visibleSeries.push(false);
+	 					} else {
+	 						visibleSeries.push(true);
+	 					}
+	 			
+	 					tariffDynData.series[indexSeries++].addPoint([object["millis"],object["energy"]],false);
+				
+	 					if (!tariffDynData.series[indexSeries].visible) {
+	 						tariffDynData.series[indexSeries].setVisible(true);
+	 						visibleSeries.push(false);
+	 					} else {
+	 						visibleSeries.push(true);
+	 					}
+	 			
+	 					tariffDynData.series[indexSeries++].addPoint([object["millis"],object["customerCount"]], false);
+	 					index2++;
+		    		}
+		    
+		   	 		index++;
+				}
+		
+				var visibleLengths = visibleSeries.length;
+				for (var i = 0; i &lt; visibleLengths; i++) {
+					if (tariffDynData.series[i] !== undefined) {
+						tariffDynData.series[i].setVisible(visibleSeries[i], false);
+					}
+				}
+		
+				tariffDynData.redraw();
+				tariffDynData.rangeSelector.clickButton(selectedRange, selectedRange, true); 
+			}
+		
+// 	function handleTariffTransactionPushTsChoosen(data) {
+		
+// 		var pushObjects = jQuery.parseJSON(data);
+// 		var index = 0;
+// 		var index2 = 0;
+// 		var cnt = 0;
+// 		var selectedRange = tariffDynData.rangeSelector.selected;
+		
+// // 		while (distributionDynDataOneTimeslot.series[0].points.length > 0) {
+		
+// // 			distributionDynDataOneTimeslot.series[0].points[0].remove(false);
+// // 			distributionDynDataOneTimeslot.series[1].points[0].remove(false);
+// // 		}
+		
+// 		// Bei Default laenge 2, aber 3
+// 		// Bei Mehr dann laenge 4, aber 5???
+// // 		var seriesLength = tariffDynData.series.length - 1;
+
+// // 		// Remove all series points
+// // 		while (tariffDynData.series[0].points.length > 0) {
+			
+// // 			index = 0;
+// // 			cnt = 0;
+
+// // 			while (!(index >= seriesLength)) {
+				
+// // 				tariffDynData.series[cnt++].points[0].remove(false);
+// // 				index++;
+// // 				tariffDynData.series[cnt++].points[0].remove(false);
+// // 				index++;
+// // 				tariffDynData.series[cnt++].points[0].remove(false);
+// // 				index++;
+// // 			}
+// // 		}
+		
+// // 		index = 0;
+		
+// 		while (pushObjects.length > index) {
+			
+// 		    var pushObject = pushObjects[index];
+		    
+// 		    index2 = 0;
+// 		    cnt = 0;
+		    
+// 		    while (pushObject.length > index2) {
+
+// 		    	var object = pushObject[index2];
+// 		    	var indexSeries = object["index"];
+
+// 		    	tariffDynData.series[indexSeries++].addPoint([object["millis"],object["profit"]],false);
+// 		    	tariffDynData.series[indexSeries++].addPoint([object["millis"],object["energy"]],false);
+// 		    	tariffDynData.series[indexSeries++].addPoint([object["millis"],object["customerCount"]], false);
+// 				index2++;
+// 		    }
+		    
+// 		    index++;
+// 		}
+		
+// 		tariffDynData.redraw();
+// 		tariffDynData.rangeSelector.clickButton(selectedRange, selectedRange, true);
+// 	}
+
+		</script>
+	</ui:define>
+
+	<ui:define name="maincontent">
+	
+		<script>
+			var appending = new Array("PRICE(&euro;)", "ENERGY(kWh)", "CUST");
+			tariffDynData = dynDataGraph('tariffDynData',#{tariffMarketBeanReplayer.tariffDynData},'',getTariffDynYAxisData('Customer count', "Price (&euro;)","Traded energy (kWh)"), appending);
+		</script>
+		
+		<div id="tariffDynData"
+			style="min-width: 400px; height: 620px; margin: 0 auto" />
+		<p:socket onMessage="handleTariffPush" channel="/tariffpush" rendered="#{!logParametersBean.isReplayerMode}" />
+	</ui:define>
+
+	<ui:define name="rowcontent">
+	</ui:define>
+
+    <ui:define name="handlePush">
+	    <p:socket onMessage="handleTariffTransactionPushTsChoosen" channel="/tariffTransactionTsChoosen" rendered="#{logParametersBean.isReplayerMode}" />
+	    <p:socket onMessage="handlePushTsChoosenBackward" channel="/tsChoosenBackward" rendered="#{logParametersBean.isReplayerMode}" />
+    	<p:socket onMessage="handleTariffTransactionPushTsChoosen" channel="/tariffcumulativeExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+    	<p:socket onMessage="handlePushTsChoosenBackward" channel="/tariffcumulativeBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+    </ui:define>
+
+</ui:composition>

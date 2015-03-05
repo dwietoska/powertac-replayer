@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow xmlns="http://www.springframework.org/schema/webflow"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/webflow
+        http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd">
+
+	<var name="requestParamUtil" class="org.powertac.replayer.user.RequestUtil" />
+
+	<input name="tab" value="flowScope.replayerurl" required="false" />
+
+	<on-start>
+		<evaluate expression="requestParamUtil.getRequestParameter('logurl', externalContext)" 
+				  result="flashScope.replayerurl"/>
+	</on-start>
+
+	<view-state id="view">
+		<on-render>
+			<evaluate expression="trainingService.increment()"></evaluate>
+		</on-render>
+	</view-state>
+</flow>

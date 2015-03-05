@@ -1,0 +1,181 @@
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	template="/WEB-INF/layouts/visualizer/master.xhtml">
+
+	<ui:define name="title">Weather Report</ui:define>
+
+	<ui:define name="headInclude">
+	
+		<script type="text/javascript">
+	    	var weatherReport;
+	
+	
+	 		 $(document).ready(
+				function() {
+					if (#{logParametersBean.isReplayerMode}) {
+						weatherReport = weatherReportGraph('weatherReport','',#{weatherBeanReplayer.temperatureData},#{weatherBeanReplayer.windSpeedData},#{weatherBeanReplayer.windDirectionData},#{weatherBeanReplayer.cloudCoverData})
+					} else {
+						weatherReport = weatherReportGraph('weatherReport','',#{weatherBean.temperatureData},#{weatherBean.windSpeedData},#{weatherBean.windDirectionData},#{weatherBean.cloudCoverData})
+					}
+				});
+	  		  
+			function handleWeatherPush(data) {
+		
+				var pushObject = jQuery.parseJSON(data);
+				var cnt = 0;
+				weatherReport.series[cnt++].addPoint([pushObject["millis"],pushObject["temperature"]],false);
+				weatherReport.series[cnt++].addPoint([pushObject["millis"],pushObject["windSpeed"]],false);
+				weatherReport.series[cnt++].addPoint([pushObject["millis"],pushObject["windDirection"]],false);
+				weatherReport.series[cnt++].addPoint([pushObject["millis"],pushObject["cloudCover"]],false);
+		
+	    		weatherReport.redraw();
+    		}
+	
+			// Zurueckspringen, nur Punkte im Diagramm loeschen
+			function handleWeatherReportTsChoosenBackward(data) {
+
+				var pushObjects = jQuery.parseJSON(data);
+		
+				var index = 0;
+				var i = 0;
+				var tsMillis;
+				var indexPoints;
+				var selectedRange = weatherReport.rangeSelector.selected;
+				var seriesLength = weatherReport.series.length - 1;
+		
+ 				var visibleSeries = [];
+		
+				var index2 = 0;
+				var cnt = 0;
+	
+				// Range Selector auf ALL, sonst fehlen Werte
+				weatherReport.rangeSelector.clickButton(5, 5, true);
+		
+				while (pushObjects.length > index) {
+			
+				    var pushObject = pushObjects[index];
+		    
+ 					if (!weatherReport.series[index].visible) {
+ 						weatherReport.series[index].setVisible(true);
+ 						visibleSeries.push(false);
+ 					} else {
+ 						visibleSeries.push(true);
+ 					}
+ 			
+ 					weatherReport.series[index].setData(pushObject, false);
+		    
+		 		   index++;
+				}
+		
+				var visibleLengths = visibleSeries.length;
+				for (var i = 0; i &lt; visibleLengths; i++) {
+					if (weatherReport.series[i] !== undefined) {
+						weatherReport.series[i].setVisible(visibleSeries[i], false);
+					}
+				}
+		
+				weatherReport.redraw();
+				weatherReport.rangeSelector.clickButton(selectedRange, selectedRange, true);
+		
+// 		var pushArray = jQuery.parseJSON(data);
+// 		var indexPoints0;
+// 		var i = 0;
+// 		var selectedRange = weatherReport.rangeSelector.selected;
+		
+// 		indexPoints = weatherReport.series[0].points.length - 1;
+		
+// 			// Alle Millis Ts durchlaufen
+// 	 		while (i &lt; pushArray.length) {
+	 			
+// 	 			tsMillis = pushArray[i];
+	 		
+// 	 			// Entspricht der letzte Punkt im Diagramm (TsMillis Wert auf der x-Achse)
+// 	 			// den zu loeschenden TsMillisWert. Diese werden rueckwaerts durchgelaufen
+// 	 			// und im Diagramm als Points geloescht. Beachtet auch, dass im Diagramm
+// 	 			// fuer einen Ts der Punkt im Diagramm fehlen kann.
+	 			
+// 	 			// Fehlt wahrscheinlich nie eine Nachricht, da nicht Broker gebunden.
+// 	 			// Sind auch viele WetterReports, fehlt wahrscheinlich nie eines
+// 	 			if (weatherReport.series[0].points[indexPoints] != undefined
+// 	 					&amp;&amp; weatherReport.series[0].points[indexPoints].x == tsMillis) {
+	 					
+// 	 				weatherReport.series[0].points[indexPoints].remove(false);
+// 	 	 			weatherReport.series[1].points[indexPoints].remove(false);
+// 	 	 			weatherReport.series[2].points[indexPoints].remove(false);
+// 	 	 			weatherReport.series[3].points[indexPoints].remove(false);
+// 	 	 			indexPoints--;
+// 	 			} 	 	
+	 			
+// 	 			i++;
+// 	 		}
+			
+// 	 		weatherReport.redraw();
+// 	 		weatherReport.rangeSelector.clickButton(selectedRange, selectedRange, true);
+			}
+	
+			function handleWeatherPushTsChoosen(data) {
+
+				var pushObjects = jQuery.parseJSON(data);
+				var pushObject;
+				var index = 0;
+				var selectedRange = weatherReport.rangeSelector.selected;
+// 		while (weatherReport.series[0].points.length > 0) {
+			
+// 			weatherReport.series[0].points[0].remove(false);
+// 			weatherReport.series[1].points[0].remove(false);
+// 			weatherReport.series[2].points[0].remove(false);
+// 			weatherReport.series[3].points[0].remove(false);
+// 		}
+		
+				while (pushObjects.length > index) {
+				
+				    pushObject = pushObjects[index];
+		    
+// 		    console.log(index);
+// 		    console.log(pushObject["millis"]);
+// 		    console.log(pushObject["temperature"]);
+// 		    console.log(pushObject["windSpeed"]);
+// 		    console.log(pushObject["windDirection"]);
+// 		    console.log(pushObject["cloudCover"]);
+		    
+					weatherReport.series[0].addPoint([pushObject["millis"],pushObject["temperature"]],false);
+					weatherReport.series[1].addPoint([pushObject["millis"],pushObject["windSpeed"]],false);
+					weatherReport.series[2].addPoint([pushObject["millis"],pushObject["windDirection"]],false);
+					weatherReport.series[3].addPoint([pushObject["millis"],pushObject["cloudCover"]],false);
+					index++;
+				}
+
+				weatherReport.redraw();
+				weatherReport.rangeSelector.clickButton(selectedRange, selectedRange, true);
+			}
+		
+		</script>
+	</ui:define>
+
+	<ui:define name="maincontent">
+	
+		<script>
+			weatherReport = weatherReportGraph('weatherReport','',#{weatherBeanReplayer.temperatureData},#{weatherBeanReplayer.windSpeedData},#{weatherBeanReplayer.windDirectionData},#{weatherBeanReplayer.cloudCoverData})
+		</script>
+			
+		<div id="weatherReport"
+			style="min-width: 400px; height: 800px; margin: 0 auto" />
+		<!-- ><p:socket onMessage="handleWeatherPush" channel="/weather" />   -->
+	</ui:define>
+
+	<ui:define name="rowcontent">
+	</ui:define>
+
+     <ui:define name="handlePush">
+		<p:socket onMessage="handleWeatherPush" channel="/weather" rendered="#{!logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleWeatherPushTsChoosen" channel="/weatherTsChoosen" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleWeatherReportTsChoosenBackward" channel="/tsChoosenBackward" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleWeatherPushTsChoosen" channel="/weatherreportExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleWeatherReportTsChoosenBackward" channel="/weatherreportBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+	</ui:define>
+
+</ui:composition>

@@ -1,0 +1,172 @@
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	template="/WEB-INF/layouts/visualizer/master.xhtml">
+
+	<ui:define name="title">Wholesale market - average clearing price per timeslot</ui:define>
+
+	<ui:define name="headInclude">
+		 <script type="text/javascript">
+			var wholesaleAverageTimeslotPriceData;
+			$(document).ready(
+				function() {
+					if (#{logParametersBean.isReplayerMode}) {
+						wholesaleAverageTimeslotPriceData = wholesaleClearingEnergy('wholesaleAverageTimeslotPriceData',#{wholesaleMarketBeanReplayer.wholesaleAverageTimeslotPriceData},'',getBaseDynYAxisData("Average clearing price (&euro;)","Traded energy (MWh)"));
+					} else {
+						wholesaleAverageTimeslotPriceData = wholesaleClearingEnergy('wholesaleAverageTimeslotPriceData',#{wholesaleMarketBean.wholesaleAverageTimeslotPriceData},'',getBaseDynYAxisData("Average clearing price (&euro;)","Traded energy (MWh)"));
+					}
+				});
+			  	
+			function handleWholesaleAnalysis(data) {
+				var array = jQuery.parseJSON(data);
+				var cnt = 0;
+				jQuery.each(array, 
+						function() {
+							var pushObject = this;
+							//known ordering: profit
+							wholesaleAverageTimeslotPriceData.series[cnt++].addPoint([pushObject["millis"],pushObject["averagePrice"]],false);	
+							wholesaleAverageTimeslotPriceData.series[cnt++].addPoint([pushObject["millis"],pushObject["energy"]],false);
+						});
+				wholesaleAverageTimeslotPriceData.redraw();
+			}
+			
+			// Zurueckspringen, nur Punkte im Diagramm loeschen
+			function handleWholesaleAnalysisTsChoosenBackward(data) {
+			
+				var pushObjects = jQuery.parseJSON(data);
+				
+				var index = 0;
+				var i = 0;
+				var tsMillis;
+				var indexPoints;
+				var selectedRange = wholesaleAverageTimeslotPriceData.rangeSelector.selected;
+				var seriesLength = wholesaleAverageTimeslotPriceData.series.length - 1;
+	console.log('AVG Price: seriesLength');			
+	console.log(seriesLength);		
+		 		var visibleSeries = [];
+				
+				var index2 = 0;
+				var cnt = 0;
+
+				// Range Selector auf ALL, sonst fehlen Werte
+				wholesaleAverageTimeslotPriceData.rangeSelector.clickButton(5, 5, true);
+				
+				while (pushObjects.length > index) {
+					
+				    var pushObject = pushObjects[index];
+				    
+		 			if (!wholesaleAverageTimeslotPriceData.series[index].visible) {
+		 				wholesaleAverageTimeslotPriceData.series[index].setVisible(true);
+		 				visibleSeries.push(false);
+		 			} else {
+		 				visibleSeries.push(true);
+		 			}
+		 			
+		 			wholesaleAverageTimeslotPriceData.series[index].setData(pushObject, false);
+				    
+				    index++;
+				}
+				
+				var visibleLengths = visibleSeries.length;
+				for (var i = 0; i &lt; visibleLengths; i++) {
+					if (wholesaleAverageTimeslotPriceData.series[i] !== undefined) {
+						wholesaleAverageTimeslotPriceData.series[i].setVisible(visibleSeries[i], false);
+					}
+				}
+				
+				wholesaleAverageTimeslotPriceData.redraw();
+				wholesaleAverageTimeslotPriceData.rangeSelector.clickButton(selectedRange, selectedRange, true);
+				
+// 				var pushArray = jQuery.parseJSON(data);
+// 				var indexPoints0;
+// 				var indexPoints1;
+// 				var i = 0;
+// 				var selectedRange = wholesaleAverageTimeslotPriceData.rangeSelector.selected;
+				
+// 				indexPoints0 = wholesaleAverageTimeslotPriceData.series[0].points.length - 1;
+// 				indexPoints1 = wholesaleAverageTimeslotPriceData.series[1].points.length - 1;
+				
+// 	 			// Alle Millis Ts durchlaufen
+// 	 	 		while (i &lt; pushArray.length) {
+	 	 			
+// 	 	 			tsMillis = pushArray[i];
+	 	 		
+// 	 	 			// Entspricht der letzte Punkt im Diagramm (TsMillis Wert auf der x-Achse)
+// 	 	 			// den zu loeschenden TsMillisWert. Diese werden rueckwaerts durchgelaufen
+// 	 	 			// und im Diagramm als Points geloescht. Beachtet auch, dass im Diagramm
+// 	 	 			// fuer einen Ts der Punkt im Diagramm fehlen kann.
+// 	 	 			if (wholesaleAverageTimeslotPriceData.series[0].points[indexPoints0] != undefined
+// 	 	 					&amp;&amp; wholesaleAverageTimeslotPriceData.series[0].points[indexPoints0].x == tsMillis) {
+	 	 					
+// 	 	 				wholesaleAverageTimeslotPriceData.series[0].points[indexPoints0].remove(false);
+// 	 	 	 			indexPoints0--;
+// 	 	 			} 	 	
+	 	 			
+// 	 	 			if (wholesaleAverageTimeslotPriceData.series[1].points[indexPoints1] != undefined 
+// 	 	 					&amp;&amp; wholesaleAverageTimeslotPriceData.series[1].points[indexPoints1].x == tsMillis) {
+ 	 					
+// 	 	 				wholesaleAverageTimeslotPriceData.series[1].points[indexPoints1].remove(false);
+// 	 	 				indexPoints1--;
+// 	 	 			} 	 
+	 	 			
+// 	 	 			i++;
+// 	 	 		}
+	 			
+// 	 	 		wholesaleAverageTimeslotPriceData.redraw();
+// 	 	 		wholesaleAverageTimeslotPriceData.rangeSelector.clickButton(selectedRange, selectedRange, true);
+			}
+			
+			function handleWholesaleAnalysisPushTsChoosen(data) {
+				
+// 				console.log(data);
+// 		 		while (wholesaleAverageTimeslotPriceData.series[0].points.length > 0) {
+				
+// 		 			wholesaleAverageTimeslotPriceData.series[0].points[0].remove(false);
+// 		 			wholesaleAverageTimeslotPriceData.series[1].points[0].remove(false);
+// 	 		    }
+				
+				var array = jQuery.parseJSON(data);
+				var cnt;
+				var selectedRange = wholesaleAverageTimeslotPriceData.rangeSelector.selected;
+				
+				jQuery.each(array, 
+						function() {
+							var pushObject = this;
+							cnt = 0;
+							//known ordering: profit
+							wholesaleAverageTimeslotPriceData.series[cnt++].addPoint([pushObject["millis"],pushObject["averagePrice"]],false);	
+							wholesaleAverageTimeslotPriceData.series[cnt++].addPoint([pushObject["millis"],pushObject["energy"]],false);
+						});
+				
+				wholesaleAverageTimeslotPriceData.redraw();
+	 	 		wholesaleAverageTimeslotPriceData.rangeSelector.clickButton(selectedRange, selectedRange, true);
+			}
+		</script>
+	</ui:define>
+
+	<ui:define name="maincontent">
+	
+		<script>
+			wholesaleAverageTimeslotPriceData = wholesaleClearingEnergy('wholesaleAverageTimeslotPriceData',#{wholesaleMarketBeanReplayer.wholesaleAverageTimeslotPriceData},'',getBaseDynYAxisData("Average clearing price (&euro;)","Traded energy (MWh)"));
+		</script>
+		
+		<div id="wholesaleAverageTimeslotPriceData"
+			style="min-width: 400px; height: 620px; margin: 0 auto" />
+		<p:socket onMessage="handleWholesaleAnalysis" channel="/statisticspush" rendered="#{!logParametersBean.isReplayerMode}" />
+	</ui:define>
+
+	<ui:define name="rowcontent">
+
+	</ui:define>
+
+     <ui:define name="handlePush">
+		<p:socket onMessage="handleWholesaleAnalysisPushTsChoosen" channel="/averageClearingPriceTsChoosen" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleWholesaleAnalysisTsChoosenBackward" channel="/tsChoosenBackwardSafetyTs" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleWholesaleAnalysisPushTsChoosen" channel="/wholesaleavgpricepertimeslotExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleWholesaleAnalysisTsChoosenBackward" channel="/wholesaleavgpricepertimeslotBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+	</ui:define>
+
+</ui:composition>

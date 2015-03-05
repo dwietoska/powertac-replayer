@@ -1,0 +1,77 @@
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	template="/WEB-INF/layouts/visualizer/master.xhtml">
+
+	<ui:define name="title">Wholesale market - market transactions in last 48 hours</ui:define>
+
+	<ui:define name="headInclude">
+		<script type="text/javascript">
+				
+			function handleWholesaleMarketPush(data) {
+				
+				var array = jQuery.parseJSON(data);
+				var cnt = 0;
+				
+				jQuery.each(array, 
+						function() {
+							var pushObject = this;
+							//known ordering: profit
+							marketTxScatter.series[cnt++].setData(pushObject,true);	
+						});
+				marketTxScatter.redraw();
+
+			}
+			
+			var marketTxScatter;
+			
+			$(document).ready(
+				function() {
+					if (#{logParametersBean.isReplayerMode}) {
+						marketTxScatter = scatterMarketTxs('marketTxScatter', '', 'Select the area to zoom-in', 'Price (&euro;/MWh)', 'Energy (MWh)', '&euro;/MWh', 'MWh', #{wholesaleMarketBeanReplayer.allMarketTransactionsData});
+					} else {
+						marketTxScatter = scatterMarketTxs('marketTxScatter', '', 'Select the area to zoom-in', 'Price (&euro;/MWh)', 'Energy (MWh)', '&euro;/MWh', 'MWh', #{wholesaleMarketBean.allMarketTransactionsData});
+					}
+				}		
+			);			
+			
+			function handleWholesaleMarketPushTsChoosen(data) {
+// 				console.log('marketAllTransactionsTsChoosen');
+// 				console.log(data);
+				
+				var array = jQuery.parseJSON(data);
+				var cnt = 0;
+				
+				jQuery.each(array, 
+						function() {
+							var pushObject = this;
+							//known ordering: profit
+							marketTxScatter.series[cnt++].setData(pushObject,true);	
+						});
+				marketTxScatter.redraw();
+			}
+		</script>
+	</ui:define>
+
+	<ui:define name="maincontent">
+	
+		<script>
+			marketTxScatter = scatterMarketTxs('marketTxScatter', '', 'Select the area to zoom-in', 'Price (&euro;/MWh)', 'Energy (MWh)', '&euro;/MWh', 'MWh', #{wholesaleMarketBeanReplayer.allMarketTransactionsData});
+		</script>
+	
+		<div id="marketTxScatter"
+			style="min-width: 400px; height: 620px; margin: 0 auto" />
+		<p:socket onMessage="handleWholesaleMarketPush"
+			channel="/markettransactionepush" rendered="#{!logParametersBean.isReplayerMode}" />
+	</ui:define>
+
+	<ui:define name="rowcontent"></ui:define>
+
+     <ui:define name="handlePush">
+		<p:socket onMessage="handleWholesaleMarketPushTsChoosen" channel="/marketAllTransactionsTsChoosen" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleWholesaleMarketPushTsChoosen" channel="/wholesalemarkettxsExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+	</ui:define>
+</ui:composition>

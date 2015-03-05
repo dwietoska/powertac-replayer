@@ -1,0 +1,242 @@
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	template="/WEB-INF/layouts/visualizer/master.xhtml">
+
+	<ui:define name="title">Balancing - per timeslot scores</ui:define>
+
+	<ui:define name="headInclude">
+		<script type="text/javascript">
+			var balancingDynDataOneTimeslot;
+	 		 $(document).ready(
+				function() {
+					var appending = new Array("PRICE(&euro;)", "ENERGY(kWh)");
+					if (#{logParametersBean.isReplayerMode}) {
+						balancingDynDataOneTimeslot = dynDataGraph('balancingDynDataOneTimeslot',#{balancingMarketBeanReplayer.balancingDynDataOneTimeslot},'',getBaseDynYAxisData("Price (&euro;)","Imbalance (kWh)"), appending);
+					} else {
+						balancingDynDataOneTimeslot = dynDataGraph('balancingDynDataOneTimeslot',#{balancingMarketBean.balancingDynDataOneTimeslot},'',getBaseDynYAxisData("Price (&euro;)","Imbalance (kWh)"), appending);
+					}
+				});
+	  	
+			function handleBalancingMarketPush(data) {
+		
+				var array = jQuery.parseJSON(data);
+				var cnt = 0;
+				jQuery.each(array, function() {
+					  var pushObject = this;
+					  balancingDynDataOneTimeslot.series[cnt++].addPoint([pushObject["millis"],pushObject["profitDelta"]],false);
+					  balancingDynDataOneTimeslot.series[cnt++].addPoint([pushObject["millis"],pushObject["energyDelta"]],false);
+				});
+				balancingDynDataOneTimeslot.redraw();
+    		}
+	
+			// Zurueckgesprungen im Diagramm
+			function handleBalancingPushTsChoosenBackward(data) {
+	    
+				var pushObjects = jQuery.parseJSON(data);
+		
+				var index = 0;
+				var i = 0;
+				var tsMillis;
+				var indexPoints;
+				var selectedRange = balancingDynDataOneTimeslot.rangeSelector.selected;
+				var seriesLength = balancingDynDataOneTimeslot.series.length - 1;
+ 				var visibleSeries = [];
+			
+				var index2 = 0;
+				var cnt = 0;
+
+				// Range Selector auf ALL, sonst fehlen Werte
+				balancingDynDataOneTimeslot.rangeSelector.clickButton(5, 5, true);
+		
+				while (pushObjects.length > index) {
+			
+				    var pushObject = pushObjects[index];
+		    
+ 					if (!balancingDynDataOneTimeslot.series[index].visible) {
+ 						balancingDynDataOneTimeslot.series[index].setVisible(true);
+ 						visibleSeries.push(false);
+ 					} else {
+ 						visibleSeries.push(true);
+ 					}
+ 			
+ 					balancingDynDataOneTimeslot.series[index].setData(pushObject, false);
+		    
+		   		 	index++;
+				}
+		
+				var visibleLengths = visibleSeries.length;
+				for (var i = 0; i &lt; visibleLengths; i++) {
+					if (balancingDynDataOneTimeslot.series[i] !== undefined) {
+						balancingDynDataOneTimeslot.series[i].setVisible(visibleSeries[i], false);
+					}
+				}
+		
+				balancingDynDataOneTimeslot.redraw();
+				balancingDynDataOneTimeslot.rangeSelector.clickButton(selectedRange, selectedRange, true);
+		
+// 		var pushArray = jQuery.parseJSON(data);
+// 		var index = 0;
+// 		var i = 0;
+// 		var tsMillis;
+// 		var indexPoints;
+// 		var selectedRange = balancingDynDataOneTimeslot.rangeSelector.selected;
+// 		var seriesLength = balancingDynDataOneTimeslot.series.length - 1;
+//  		var visibleSeries = [];
+		
+// // 		// Auf All setzen, damit alle Werte geloescht werden koennen
+// // 		// Ansonsten z.B. range auf 1w und dann werden nich alle Werte im Diagramm angezeigt
+// // 		// Dadurch kommt dann beim loeschen die Meldung, distributionDynDataOneTimeslot.series[index].points[0].remove(false)
+// // 		// is not a function.
+// // 		// Es koennen vom Broker Model fuer eine Ts Werte fehlen, deswegen hat die obige Loesung
+// // 		// auch Probleme mit is not defined geworfen
+// // 		// -> Series unterschiedliche Laenge
+// 		balancingDynDataOneTimeslot.rangeSelector.clickButton(5, 5, true);
+ 		
+//  		while (index &lt;= seriesLength) {
+ 			
+//  			if (!balancingDynDataOneTimeslot.series[index].visible) {
+//  				balancingDynDataOneTimeslot.series[index].setVisible(true);
+//  				visibleSeries.push(false);
+//  			} else {
+//  				visibleSeries.push(true);
+//  			}
+ 			
+//  	 		indexPoints = balancingDynDataOneTimeslot.series[index].points.length - 1;
+
+//  			i = 0;
+ 	 						
+//  	 		while (indexPoints >= 0) {
+
+//  	 			if (pushArray.indexOf(balancingDynDataOneTimeslot.series[index].points[indexPoints].x) >= 0) {
+
+//  	 				balancingDynDataOneTimeslot.series[index].points[indexPoints].remove(false);
+//  	 			}
+ 	 			
+//  	 			indexPoints--;
+//  	 		}
+
+//  			index++;
+//  		}
+ 		
+// 		var visibleLengths = visibleSeries.length;
+// 		for (var i = 0; i &lt; visibleLengths; i++) {
+// 			if (balancingDynDataOneTimeslot.series[i] !== undefined) {
+// 				balancingDynDataOneTimeslot.series[i].setVisible(visibleSeries[i], false);
+// 			}
+// 		}
+		
+//  		balancingDynDataOneTimeslot.redraw();
+//  		balancingDynDataOneTimeslot.rangeSelector.clickButton(selectedRange, selectedRange, true);
+			}
+	
+	
+			function handleBalancingPushTsChoosen(data) {
+				var pushObjects = jQuery.parseJSON(data);
+				var index = 0;
+				var index2 = 0;
+				var cnt = 0;
+				var selectedRange = balancingDynDataOneTimeslot.rangeSelector.selected;
+				var visibleSeries = [];
+		
+// 		while (distributionDynDataOneTimeslot.series[0].points.length > 0) {
+		
+// 			distributionDynDataOneTimeslot.series[0].points[0].remove(false);
+// 			distributionDynDataOneTimeslot.series[1].points[0].remove(false);
+// 		}
+		
+// 		// Bei Default laenge 2, aber 3
+// 		// Bei Mehr dann laenge 4, aber 5???
+// 		var seriesLength = balancingDynDataOneTimeslot.series.length - 1;
+
+// 		// Remove all series points
+// 		while (balancingDynDataOneTimeslot.series[0].points.length > 0) {
+			
+// 			index = 0;
+// 			cnt = 0;
+
+// 			while (!(index >= seriesLength)) {
+				
+// 				balancingDynDataOneTimeslot.series[cnt++].points[0].remove(false);
+// 				index++;
+// 				balancingDynDataOneTimeslot.series[cnt++].points[0].remove(false);
+// 				index++;
+// 			}
+// 		}
+			
+				index = 0;
+		
+				while (pushObjects.length > index) {
+			
+		  		  	var pushObject = pushObjects[index];
+		    
+		   		 	index2 = 0;
+		    		cnt = 0;
+		    
+		    		while (pushObject.length > index2) {
+
+		    			var object = pushObject[index2];
+		    			var indexSeries = object["index"];
+
+	 					if (!balancingDynDataOneTimeslot.series[indexSeries].visible) {
+	 						balancingDynDataOneTimeslot.series[indexSeries].setVisible(true);
+	 						visibleSeries.push(false);
+	 					} else {
+	 						visibleSeries.push(true);
+	 					}
+	 			
+		    			balancingDynDataOneTimeslot.series[indexSeries++].addPoint([object["millis"],object["profitDelta"]],false);
+		    
+	 					if (!balancingDynDataOneTimeslot.series[indexSeries].visible) {
+	 						balancingDynDataOneTimeslot.series[indexSeries].setVisible(true);
+	 						visibleSeries.push(false);
+	 					} else {
+	 						visibleSeries.push(true);
+	 					}
+	 			
+		    			balancingDynDataOneTimeslot.series[indexSeries++].addPoint([object["millis"],object["energyDelta"]],false);
+						index2++;
+		    		}
+		    
+		    		index++;
+				}
+		
+				var visibleLengths = visibleSeries.length;
+				for (var i = 0; i &lt; visibleLengths; i++) {
+					if (balancingDynDataOneTimeslot.series[i] !== undefined) {
+						balancingDynDataOneTimeslot.series[i].setVisible(visibleSeries[i], false);
+					}
+				}
+		
+				balancingDynDataOneTimeslot.redraw();
+				balancingDynDataOneTimeslot.rangeSelector.clickButton(selectedRange, selectedRange, true); 
+			}
+		</script>
+	</ui:define>
+
+	<ui:define name="maincontent">
+	
+		<script>
+			var appending = new Array("PRICE(&euro;)", "ENERGY(kWh)");
+			balancingDynDataOneTimeslot = dynDataGraph('balancingDynDataOneTimeslot',#{balancingMarketBeanReplayer.balancingDynDataOneTimeslot},'',getBaseDynYAxisData("Price (&euro;)","Imbalance (kWh)"), appending);
+		</script>
+		
+		<div id="balancingDynDataOneTimeslot"
+			style="min-width: 400px; height: 620px; margin: 0 auto" />
+		<p:socket onMessage="handleBalancingMarketPush" channel="/balancingmarketpush" rendered="#{!logParametersBean.isReplayerMode}" />
+	</ui:define>
+
+	<ui:define name="rowcontent">
+	</ui:define>
+	
+     <ui:define name="handlePush">
+		<p:socket onMessage="handleBalancingPushTsChoosen" channel="/balancingTsChoosen" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleBalancingPushTsChoosenBackward" channel="/tsChoosenBackward" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleBalancingPushTsChoosen" channel="/balancingpertimeslotExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleBalancingPushTsChoosenBackward" channel="/balancingpertimeslotBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+	</ui:define>
+
+</ui:composition>

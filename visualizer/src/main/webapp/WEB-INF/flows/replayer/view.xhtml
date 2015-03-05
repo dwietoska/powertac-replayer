@@ -1,0 +1,170 @@
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	template="/WEB-INF/layouts/visualizer/master.xhtml">
+
+	<ui:define name="title">Finance - aggregate scores</ui:define>
+
+	<ui:define name="metadata">
+		<f:event listener="#{logParametersBean.setLogFileUrl(flashScope.replayerurl)}"
+			     type="preRenderView" />
+		<f:event listener="#{logParametersBean.setReplayerMode('true')}"
+			     type="preRenderView" />
+	</ui:define>
+
+	<ui:define name="headInclude">
+		 <script type="text/javascript">
+		 
+		    var financeDynData;
+			
+			$(document).ready(
+				function() {
+					var appending = new Array("PROFIT(&euro;)");
+					if (#{logParametersBean.isReplayerMode}) {
+ 						financeDynData = dynDataGraph('financeDynData',#{financeBeanReplayer.financeDynData},'',getOneDynYAxisData('Profit(&euro;)'), appending);
+					} else {
+						financeDynData = dynDataGraph('financeDynData',#{financeBean.financeDynData},'',getOneDynYAxisData('Profit(&euro;)'), appending);
+					}
+				}
+			);
+			  
+			function handleFinancePush(data) {
+				var array = jQuery.parseJSON(data);
+				var cnt = 0;
+				jQuery.each(array, function() {
+					var pushObject = this;
+					//known ordering: profit
+					financeDynData.series[cnt++].addPoint([pushObject["millis"],pushObject["profit"]],false);
+				});
+				financeDynData.redraw();
+			} 
+			
+		    // Zurueckgesprungen im Diagramm
+			function handlePushTsChoosenBackward(data) {
+
+				var pushObjects = jQuery.parseJSON(data);
+				
+				var index = 0;
+				var i = 0;
+				var tsMillis;
+				var indexPoints;
+				var selectedRange = financeDynData.rangeSelector.selected;
+				var seriesLength = financeDynData.series.length - 1;
+		 		var visibleSeries = [];
+				
+				var index2 = 0;
+				var cnt = 0;
+
+				// Range Selector auf ALL, sonst fehlen Werte
+				financeDynData.rangeSelector.clickButton(5, 5, true);
+				
+				while (pushObjects.length > index) {
+					
+				    var pushObject = pushObjects[index];
+				    
+		 			if (!financeDynData.series[index].visible) {
+		 				financeDynData.series[index].setVisible(true);
+		 				visibleSeries.push(false);
+		 			} else {
+		 				visibleSeries.push(true);
+		 			}
+		 			
+		 			financeDynData.series[index].setData(pushObject, false);
+				    
+				    index++;
+				}
+				
+				var visibleLengths = visibleSeries.length;
+				for (var i = 0; i &lt; visibleLengths; i++) {
+					if (financeDynData.series[i] !== undefined) {
+						financeDynData.series[i].setVisible(visibleSeries[i], false);
+					}
+				}
+				
+				financeDynData.redraw();
+				financeDynData.rangeSelector.clickButton(selectedRange, selectedRange, true);
+			}
+			
+			// Vorspringen im Diagramm
+			function handleFinancePushTsChoosen(data) {
+		
+				var pushObjects = jQuery.parseJSON(data);
+				var index = 0;
+				var index2 = 0;
+				var cnt = 0;
+				var selectedRange = financeDynData.rangeSelector.selected;
+				var visibleSeries = [];
+		
+				index = 0;
+		
+				while (pushObjects.length > index) {
+			
+		    		var pushObject = pushObjects[index];
+		    
+		    		index2 = 0;
+		    		cnt = 0;
+		    
+		   		 	while (pushObject.length > index2) {
+
+		    			var object = pushObject[index2];
+		    			var indexSeries = object["index"];
+
+	 					if (!financeDynData.series[indexSeries].visible) {
+	 						financeDynData.series[indexSeries].setVisible(true);
+	 						visibleSeries.push(false);
+	 					} else {
+	 						visibleSeries.push(true);
+	 					}
+	 			
+	 					financeDynData.series[indexSeries++].addPoint([object["millis"],object["profit"]],false);
+						index2++;
+		    		}
+		    
+		   		 index++;
+				}
+		
+				var visibleLengths = visibleSeries.length;
+				for (var i = 0; i &lt; visibleLengths; i++) {
+					if (financeDynData.series[i] !== undefined) {
+						financeDynData.series[i].setVisible(visibleSeries[i], false);
+					}
+				}
+		
+				financeDynData.redraw();
+				financeDynData.rangeSelector.clickButton(selectedRange, selectedRange, true); 
+			}
+		</script>
+	</ui:define>
+
+	<ui:define name="maincontent">
+	
+		<script>
+			var appending = new Array("PROFIT(&euro;)");
+			financeDynData = dynDataGraph('financeDynData',#{financeBeanReplayer.financeDynData},'',getOneDynYAxisData('Profit(&euro;)'), appending);
+		</script>
+		
+		 <div id="financeDynData" style="min-width: 400px; height: 620px; margin: 0 auto" />
+		<!--  <p:socket onMessage="handleFinancePush" channel="/financepush" />  -->
+	</ui:define>
+
+	<ui:define name="rowcontent">
+	</ui:define>
+	
+	<ui:define name="replayercontent">
+		<h:form id="formLogReplayerContent">
+			<p:remoteCommand name="processGivenFile" autoRun="true" update=":formLog2, :formLog:panelGroupTopReplayerContent, :formLog:panelGroupExtendedModeReplayerContent, :formLog:buttons"
+				actionListener="#{logParametersBean.createLogFile()}" />
+		</h:form>
+	</ui:define>
+
+     <ui:define name="handlePush">
+		<p:socket onMessage="handleFinancePush" channel="/financepush" rendered="#{!logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleFinancePushTsChoosen" channel="/financeTsChoosen" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handlePushTsChoosenBackward" channel="/tsChoosenBackward" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleFinancePushTsChoosen" channel="/financecumulativeExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handlePushTsChoosenBackward" channel="/financecumulativeBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+	</ui:define>
+</ui:composition>

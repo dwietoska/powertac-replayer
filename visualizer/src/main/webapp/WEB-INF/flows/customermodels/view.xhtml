@@ -1,0 +1,261 @@
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	template="/WEB-INF/layouts/visualizer/master.xhtml">
+
+	<ui:define name="title">Customer Models</ui:define>
+
+	<ui:define name="headInclude">
+
+		<script type="text/javascript">
+			var customerModels;
+			$(document).ready(
+				function() {
+					var appending = new Array();
+					if (#{logParametersBean.isReplayerMode}) {
+						customerModels = customerModelsChart('customerModels',#{customerModelBeanReplayer.wholesaleDynDataOneTimeslot},'',getBaseDynYAxisData("Price (&euro;)","Traded energy (MWh)"), appending);
+					} else {
+						customerModels = customerModelsChart('customerModels',#{customerInfoService.wholesaleDynDataOneTimeslot},'',getBaseDynYAxisData("Price (&euro;)","Traded energy (MWh)"), appending);	
+					}
+			});
+			
+			function handleTabChange(event, index) {
+				if (#{logParametersBean.isReplayerMode}) {
+					var data = #{customerModelBeanReplayer.wholesaleDynDataOneTimeslot};
+					customerModels = customerModelsChart('customerModels', data ,'',getBaseDynYAxisData("Price (&euro;)","Traded energy (MWh)"));
+					customerModels.redraw();
+				} else {
+					var data = #{customerInfoService.wholesaleDynDataOneTimeslot};
+					customerModels = customerModelsChart('customerModels', data ,'',getBaseDynYAxisData("Price (&euro;)","Traded energy (MWh)"));
+					customerModels.redraw();
+				}
+			}
+
+// 			function handleCustomerModelsPushTsChoosen() {
+// 				console.log('Customer Models');
+// // 				var data = #{customerInfoService.wholesaleDynDataOneTimeslot};
+// // 				customerModels = customerModelsChart('customerModels', data ,'',getBaseDynYAxisData("Price (&euro;)","Traded energy (MWh)"));
+// // 				customerModels.redraw();
+// 				refreshDiagram();
+// 			}
+			
+			// Vorgesprungen
+			function handleCustomerModelsPushTsChoosen(data) {
+				console.log('Customer Models Vor');
+// 				console.log(data);
+// 				var data = #{customerInfoService.wholesaleDynDataOneTimeslot};
+// 				customerModels = customerModelsChart('customerModels', data ,'',getBaseDynYAxisData("Price (&euro;)","Traded energy (MWh)"));
+// 				customerModels.redraw();
+
+				var pushObjects = jQuery.parseJSON(data);
+				var index = 0;
+				var index2 = 0;
+				var cnt = 0;
+				var selectedRange = customerModels.rangeSelector.selected;
+				var visibleSeries = [];
+		
+				index = 0;
+		
+				while (pushObjects.length > index) {
+			
+		   			 var object = pushObjects[index];
+
+		    		index2 = 0;
+		    		cnt = 0;
+
+	 					if (!customerModels.series[0].visible) {
+	 						customerModels.series[0].setVisible(true);
+	 						visibleSeries.push(false);
+	 					} else {
+	 						visibleSeries.push(true);
+	 					}
+	 			
+	 					customerModels.series[0].addPoint([object["millis"],object["charge"]],false);
+		    
+	 					if (!customerModels.series[1].visible) {
+	 						customerModels.series[1].setVisible(true);
+	 						visibleSeries.push(false);
+	 					} else {
+	 						visibleSeries.push(true);
+	 					}
+	 			
+	 					customerModels.series[1].addPoint([object["millis"],object["kWh"]],false);
+						index2++;
+		
+		    
+		    	index++;
+			}
+		
+			var visibleLengths = visibleSeries.length;
+			for (var i = 0; i &lt; visibleLengths; i++) {
+				if (customerModels.series[i] !== undefined) {
+					customerModels.series[i].setVisible(visibleSeries[i], false);
+				}
+			}
+		
+			customerModels.redraw();
+			customerModels.rangeSelector.clickButton(selectedRange, selectedRange, true); 
+		
+// 				refreshDiagram();
+		}
+						
+			// Zurueckgesprungen im Diagramm
+			function handleCustomerModelsPushTsChoosenBackward(data) {
+				console.log('Customer Models Back');
+				console.log(data);
+				
+			    var pushObjects = jQuery.parseJSON(data);
+				
+				var index = 0;
+				var i = 0;
+				var tsMillis;
+				var indexPoints;
+				var selectedRange = customerModels.rangeSelector.selected;
+				var seriesLength = customerModels.series.length - 1;
+		 		var visibleSeries = [];
+				
+				var index2 = 0;
+				var cnt = 0;
+
+				// Range Selector auf ALL, sonst fehlen Werte
+				customerModels.rangeSelector.clickButton(5, 5, true);
+				
+				while (pushObjects.length > index) {
+					
+				    var pushObject = pushObjects[index];
+				    
+		 			if (!customerModels.series[index].visible) {
+		 				customerModels.series[index].setVisible(true);
+		 				visibleSeries.push(false);
+		 			} else {
+		 				visibleSeries.push(true);
+		 			}
+		 			
+		 			customerModels.series[index].setData(pushObject, false);
+				    
+				    index++;
+				}
+				
+				var visibleLengths = visibleSeries.length;
+				for (var i = 0; i &lt; visibleLengths; i++) {
+					if (customerModels.series[i] !== undefined) {
+						customerModels.series[i].setVisible(visibleSeries[i], false);
+					}
+				}
+				
+				customerModels.redraw();
+				customerModels.rangeSelector.clickButton(selectedRange, selectedRange, true);
+				
+			}
+			
+		</script>
+
+	</ui:define>
+
+	<ui:define name="maincontent">
+		<p:tabView rendered="#{!logParametersBean.isReplayerMode}" id="tabView" var="customer"
+			value="#{customerInfoService.customerService.customerList}"
+			onTabChange="handleTabChange(event, index)">
+
+			<p:ajax event="tabChange" listener="#{customerInfoService.onChange}"
+				update=":formLog2:formB:mustRefresh" /> 
+
+			<p:tab id="customerTab" title="#{customer.customerInfo.name}">
+
+				<h:panelGrid columns="2" cellpadding="10">
+
+					<h:panelGrid columns="2" cellpadding="10">
+						<h:outputText value="Name: " />
+						<h:outputText id="customerName"
+							value="#{customer.customerInfo.name}" />
+
+						<h:outputText value="Population: " />
+						<h:outputText id="population"
+							value="#{customer.customerInfo.population}" />
+							
+						<h:outputText value="Power type: " />
+						<h:outputText id="powerType"
+							value="#{customer.customerInfo.powerType}" />
+
+					</h:panelGrid>
+
+				</h:panelGrid>
+
+			</p:tab>
+
+		</p:tabView>
+		
+		<p:tabView rendered="#{logParametersBean.isReplayerMode}" 
+		    id="tabViewReplayer" var="customerInfo"
+			value="#{customerModelBeanReplayer.customerInfo}"
+			activeIndex="#{customerModelBeanReplayer.activeIndex}"
+			onTabChange="handleTabChange(event, index)">
+			
+			<p:ajax event="tabChange" listener="#{customerModelBeanReplayer.onChange}"
+				update=":formLog2:formB:mustRefresh" 
+				 /> 
+
+			<p:tab id="customerTabReplayer" title="#{customerInfo.name}">
+
+				<h:panelGrid columns="2" cellpadding="10">
+
+					<h:panelGrid columns="2" cellpadding="10">
+						<h:outputText value="Name: " />
+						<h:outputText id="customerNameReplayer"
+							value="#{customerInfo.name}" />
+
+						<h:outputText value="Population: " />
+						<h:outputText id="populationReplayer"
+							value="#{customerInfo.population}" />
+							
+						<h:outputText value="Power type: " />
+						<h:outputText id="powerTypeReplayer"
+							value="#{customerInfo.powerType}" />
+
+					</h:panelGrid>
+
+				</h:panelGrid>
+
+			</p:tab>
+
+		</p:tabView>
+		
+		<h:form id="formB">
+		     <p:remoteCommand name="refreshDiagram" update="mustRefresh" />
+<!-- 					      actionListener="#{customerInfoService.wholesaleDynDataOneTimeslot}" -->
+			<p:panel id="mustRefresh">
+				<script>
+				if (#{logParametersBean.isReplayerMode}) {
+					var data = #{customerModelBeanReplayer.wholesaleDynDataOneTimeslot};
+					customerModels = customerModelsChart('customerModels', data ,'',getBaseDynYAxisData("Price (&euro;)","Traded energy (MWh)"));
+					customerModels.redraw();
+				} else {
+					var data = #{customerInfoService.wholesaleDynDataOneTimeslot};
+					customerModels = customerModelsChart('customerModels', data ,'',getBaseDynYAxisData("Price (&euro;)","Traded energy (MWh)"));
+					customerModels.redraw();
+				}
+				</script>
+			</p:panel>
+        </h:form> 
+		
+
+		<div id="customerModels"
+			style="min-width: 400px; height: 620px; margin: 0 auto" />
+
+
+	</ui:define>
+
+	<ui:define name="rowcontent">
+
+	</ui:define>
+
+     <ui:define name="handlePush">
+		<p:socket onMessage="handleCustomerModelsPushTsChoosen" channel="/customerModelsTsChoosen" rendered="#{logParametersBean.isReplayerMode}" />
+	    <p:socket onMessage="handleCustomerModelsPushTsChoosen" channel="/customermodelsExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+	    <p:socket onMessage="handleCustomerModelsPushTsChoosenBackward" channel="/customermodelsBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+	</ui:define>
+
+</ui:composition>

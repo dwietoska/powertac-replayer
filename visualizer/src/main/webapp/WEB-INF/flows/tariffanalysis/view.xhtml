@@ -1,0 +1,362 @@
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	template="/WEB-INF/layouts/visualizer/master.xhtml">
+
+	<ui:define name="title">Tariff analysis</ui:define>
+
+	<ui:define name="headInclude">
+
+		<script>
+			$(window).load(
+					function() {
+						/*code here*/
+						
+						document.getElementsByTagName("tbody")[0]
+								.removeAttribute("class"); //removing primefaces's css
+								
+						document.getElementsByTagName("form")[0].setAttribute(
+								"class", "margin10");
+						
+						document.getElementsByTagName("table")[0].setAttribute(
+								"class", "bordered");
+						//$("th").each(function(){$(this)[0].setAttribute("class", "text-center")});
+						//$("td").each(function(){$(this)[0].setAttribute("class", "text-center")});
+						//document.getElementsByTagName("th")[0].setAttribute("class", "text-center");
+					});
+			
+			function handleTsChoosen() {
+// 				var data = #{customerInfoService.wholesaleDynDataOneTimeslot};
+// 				customerModels = customerModelsChart('customerModels', data ,'',getBaseDynYAxisData("Price (&euro;)","Traded energy (MWh)"));
+// 				customerModels.redraw();
+				if (#{logParametersBean.isReplayerMode}) {
+					refreshTable();
+				} else {
+					refreshTableNormal();
+				}
+			}
+		</script>
+	</ui:define>
+
+	<ui:define name="maincontent">
+		
+		<f:facet name="override">
+			<h:outputStylesheet library="css" name="bordered_table.css" />
+		</f:facet>
+		<h:form id="form">
+		
+		    <p:remoteCommand rendered="#{logParametersBean.isReplayerMode}"
+		    				 name="refreshTable"
+					         update="tableActive, dialog" />
+			<p:remoteCommand rendered="#{!logParametersBean.isReplayerMode}"
+		    				 name="refreshTableNormal"
+					         update="tableActiveNormal, dialog" />
+					         
+			<p:dataTable rendered="#{logParametersBean.isReplayerMode}"
+				id="tableActive" value="#{tariffMarketBeanReplayer.allTarifsReplayer}"
+				var="o" styleClass="order-table" headerClass="order-table-header"
+				rowKey="#{o.spec}"
+				rowClasses="order-table-odd-row,order-table-even-row"
+				paginator="true" rows="5"
+				paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+				rowsPerPageTemplate="5,10,15">
+
+				<p:column id="id" headerText="Tariff ID">
+					#{o.spec.id}
+				</p:column>
+
+				<p:column id="revenue" headerText="Money flow ['000 EUR]">
+					<h:outputText value="#{o.profitInThousandsOfEuro}" />
+				</p:column>
+
+				<p:column id="energy" headerText="Traded energy [MWh]">
+					<h:outputText value="#{o.netMWh}" />
+				</p:column>
+
+				<p:column id="power_type" headerText="Power Type">
+					<h:outputText value="#{o.powerType}" />
+				</p:column>
+
+				<p:column id="broker" headerText="Offered by">
+					<h:outputText value="#{o.brokerName}" />
+				</p:column>
+
+				<p:column style="width:4%">
+					<p:commandButton id="selectButton" update=":formLog2:form:display"
+						oncomplete="tariffDialog.show()" icon="ui-icon-search"
+						title="View">
+						<f:setPropertyActionListener value="#{o}"
+							target="#{tariffMarketBeanReplayer.selectedTariffDataAttribute}" />
+					</p:commandButton>
+				</p:column>
+			</p:dataTable>
+
+			<p:dataTable rendered="#{!logParametersBean.isReplayerMode}"
+				id="tableActiveNormal" value="#{tariffMarketBean.allTarifs}"
+				var="o" styleClass="order-table" headerClass="order-table-header"
+				rowKey="#{o.spec}"
+				rowClasses="order-table-odd-row,order-table-even-row"
+				paginator="true" rows="5"
+				paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+				rowsPerPageTemplate="5,10,15"
+				selection="#{tariffMarketBean.selectedTariff}"
+				selectionMode="single">
+
+				<p:column id="idNormal" headerText="Tariff ID">
+					#{o.spec.id}	
+				</p:column>
+
+				<p:column id="revenueNormal" headerText="Money flow ['000 EUR]">
+					<h:outputText value="#{o.profitInThousandsOfEuro}" />
+				</p:column>
+
+				<p:column id="energyNormal" headerText="Traded energy [MWh]">
+					<h:outputText value="#{o.netMWh}" />
+				</p:column>
+
+				<p:column id="power_typeNormal" headerText="Power Type">
+					<h:outputText value="#{o.powerType}" />
+				</p:column>
+
+				<p:column id="brokerNormal" headerText="Offered by">
+					<h:outputText value="#{o.broker.name}" />
+				</p:column>
+
+				<p:column style="width:4%">
+					<p:commandButton id="selectButtonNormal" update=":formLog2:form:displayNormal"
+						oncomplete="tariffDialog.show()" icon="ui-icon-search"
+						title="View">
+						<f:setPropertyActionListener value="#{o}"
+							target="#{tariffMarketBean.selectedTariff}" />
+					</p:commandButton>
+				</p:column>
+			</p:dataTable>
+
+			<p:dialog id="dialog" header="Tariff Details" widgetVar="tariffDialog"
+				resizable="false" width="500" showEffect="fade" hideEffect="fade">
+
+				<h:panelGrid rendered="#{logParametersBean.isReplayerMode}" 
+							id="display" columns="2" cellpadding="4">
+
+					<h:outputText value="Id:" />
+					<h:outputText value="#{tariffMarketBeanReplayer.selectedTariffDataAttribute.spec.id}"
+						id="id" />
+
+					<h:outputText value="Expiration" />
+					<h:outputText
+						value="#{tariffMarketBeanReplayer.selectedTariffDataAttribute.spec.expiration}"
+						id="expiration" />
+
+					<h:outputText value="Minimal duration:" />
+					<h:outputText
+						value="#{tariffMarketBeanReplayer.selectedTariffDataAttribute.spec.minDuration}"
+						id="minimalDuration" />
+
+					<h:outputText value="Signup payment:" />
+					<h:outputText
+						value="#{tariffMarketBeanReplayer.selectedTariffDataAttribute.spec.signupPayment}"
+						id="signupPayment" />
+
+					<h:outputText value="Early withdraw payment:" />
+					<h:outputText
+						value="#{tariffMarketBeanReplayer.selectedTariffDataAttribute.spec.earlyWithdrawPayment}"
+						id="earlyWithdrawPayment" />
+
+					<h:outputText value="Periodic payment:" />
+					<h:outputText
+						value="#{tariffMarketBeanReplayer.selectedTariffDataAttribute.spec.periodicPayment}"
+						id="periodicPayment" />
+
+					<h:outputText value="Supersedes:" />
+					<h:outputText
+						value="#{tariffMarketBeanReplayer.selectedTariffDataAttribute.spec.supersedes}"
+						id="supersedes" />
+
+
+					<script>
+			    	 if ($('#chart').length){  
+ 						shown(#{tariffMarketBeanReplayer.selectedTariffDataAttribute.ratesGraph});
+ 				    } 
+	
+					</script> 
+				</h:panelGrid>
+
+				<h:panelGrid rendered="#{!logParametersBean.isReplayerMode}" 
+							id="displayNormal" columns="2" cellpadding="4">
+
+					<h:outputText value="Id:" />
+					<h:outputText value="#{tariffMarketBean.selectedTariff.spec.id}"
+						id="idNormal" />
+
+					<h:outputText value="Expiration" />
+					<h:outputText
+						value="#{tariffMarketBean.selectedTariff.spec.expiration}"
+						id="expirationNormal" />
+
+					<h:outputText value="Minimal duration:" />
+					<h:outputText
+						value="#{tariffMarketBean.selectedTariff.spec.minDuration}"
+						id="minimalDurationNormal" />
+
+					<h:outputText value="Signup payment:" />
+					<h:outputText
+						value="#{tariffMarketBean.selectedTariff.spec.signupPayment}"
+						id="signupPaymentNormal" />
+
+					<h:outputText value="Early withdraw payment:" />
+					<h:outputText
+						value="#{tariffMarketBean.selectedTariff.spec.earlyWithdrawPayment}"
+						id="earlyWithdrawPaymentNormal" />
+
+					<h:outputText value="Periodic payment:" />
+					<h:outputText
+						value="#{tariffMarketBean.selectedTariff.spec.periodicPayment}"
+						id="periodicPaymentNormal" />
+
+					<h:outputText value="Supersedes:" />
+					<h:outputText
+						value="#{tariffMarketBean.selectedTariff.spec.supersedes}"
+						id="supersedesNormal" />
+
+					<script>
+					 if ($('#chart').length){  
+ 						shown(#{tariffMarketBean.selectedTariff.ratesGraph});
+ 				    }  
+				      
+					</script> 
+				</h:panelGrid>
+
+				<div id="chart"
+					style="min-width: 400px; height: 200px; margin: 0 auto"></div>
+
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+<!-- 	<ui:define name="maincontent"> -->
+		
+<!-- 		<f:facet name="override"> -->
+<!-- 			<h:outputStylesheet library="css" name="bordered_table.css" /> -->
+<!-- 		</f:facet> -->
+<!-- 		<h:form id="form"> -->
+		
+<!-- 		    <p:remoteCommand rendered="#{logParametersBean.isExtendedMode}" -->
+<!-- 		    				 name="refreshTable" -->
+<!-- 					         update="tableActive, dialog" /> -->
+					     
+<!-- 			<p:dataTable rendered="#{logParametersBean.isExtendedMode}" -->
+<!-- 				id="tableActive" value="#{tariffMarketBean.allTarifs}" -->
+<!-- 				var="o" styleClass="order-table" headerClass="order-table-header" -->
+<!-- 				rowKey="#{o.spec}" -->
+<!-- 				rowClasses="order-table-odd-row,order-table-even-row" -->
+<!-- 				paginator="true" rows="5" -->
+<!-- 				paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}" -->
+<!-- 				rowsPerPageTemplate="5,10,15" -->
+<!-- 				selection="#{tariffMarketBean.selectedTariff}" -->
+<!-- 				selectionMode="single"> -->
+
+<!-- 				<p:column id="id" headerText="Tariff ID"> -->
+<!-- 					#{o.spec.id}	 -->
+<!-- 				</p:column> -->
+
+<!-- 				<p:column id="revenue" headerText="Money flow ['000 EUR]"> -->
+<!-- 					<h:outputText value="#{o.profitInThousandsOfEuro}" /> -->
+<!-- 				</p:column> -->
+
+<!-- 				<p:column id="energy" headerText="Traded energy [MWh]"> -->
+<!-- 					<h:outputText value="#{o.netMWh}" /> -->
+<!-- 				</p:column> -->
+
+<!-- 				<p:column id="power_type" headerText="Power Type"> -->
+<!-- 					<h:outputText value="#{o.powerType}" /> -->
+<!-- 				</p:column> -->
+
+<!-- 				<p:column id="broker" headerText="Offered by"> -->
+<!-- 					<h:outputText value="#{o.broker.name}" /> -->
+<!-- 				</p:column> -->
+
+<!-- 				<p:column style="width:4%"> -->
+<!-- 					<p:commandButton id="selectButton" update=":formLog2:form:display" -->
+<!-- 						oncomplete="tariffDialog.show()" icon="ui-icon-search" -->
+<!-- 						title="View"> -->
+<!-- 						<f:setPropertyActionListener value="#{o}" -->
+<!-- 							target="#{tariffMarketBean.selectedTariff}" /> -->
+<!-- 					</p:commandButton> -->
+<!-- 				</p:column> -->
+<!-- 			</p:dataTable> -->
+
+<!-- 			<p:dialog rendered="#{logParametersBean.isExtendedMode}" id="dialog" header="Tariff Details" widgetVar="tariffDialog" -->
+<!-- 				resizable="false" width="500" showEffect="fade" hideEffect="fade"> -->
+
+
+
+<!-- 				<h:panelGrid id="display" columns="2" cellpadding="4"> -->
+
+<!-- 					<h:outputText value="Id:" /> -->
+<!-- 					<h:outputText value="#{tariffMarketBean.selectedTariff.spec.id}" -->
+<!-- 						id="id" /> -->
+
+<!-- 					<h:outputText value="Expiration" /> -->
+<!-- 					<h:outputText -->
+<!-- 						value="#{tariffMarketBean.selectedTariff.spec.expiration}" -->
+<!-- 						id="expiration" /> -->
+
+<!-- 					<h:outputText value="Minimal duration:" /> -->
+<!-- 					<h:outputText -->
+<!-- 						value="#{tariffMarketBean.selectedTariff.spec.minDuration}" -->
+<!-- 						id="minimalDuration" /> -->
+
+<!-- 					<h:outputText value="Signup payment:" /> -->
+<!-- 					<h:outputText -->
+<!-- 						value="#{tariffMarketBean.selectedTariff.spec.signupPayment}" -->
+<!-- 						id="signupPayment" /> -->
+
+<!-- 					<h:outputText value="Early withdraw payment:" /> -->
+<!-- 					<h:outputText -->
+<!-- 						value="#{tariffMarketBean.selectedTariff.spec.earlyWithdrawPayment}" -->
+<!-- 						id="earlyWithdrawPayment" /> -->
+
+<!-- 					<h:outputText value="Periodic payment:" /> -->
+<!-- 					<h:outputText -->
+<!-- 						value="#{tariffMarketBean.selectedTariff.spec.periodicPayment}" -->
+<!-- 						id="periodicPayment" /> -->
+
+<!-- 					<h:outputText value="Supersedes:" /> -->
+<!-- 					<h:outputText -->
+<!-- 						value="#{tariffMarketBean.selectedTariff.spec.supersedes}" -->
+<!-- 						id="supersedes" /> -->
+
+
+<!-- 					<script> -->
+				<!--	 if ($('#chart').length){  
+ 						shown(#{tariffMarketBean.selectedTariff.ratesGraph});
+ 				    }  -->
+				        
+				    
+						
+<!-- 					</script>  -->
+<!-- 				</h:panelGrid> -->
+
+
+<!-- 				<div id="chart" -->
+<!-- 					style="min-width: 400px; height: 200px; margin: 0 auto"></div> -->
+
+
+<!-- 			</p:dialog> -->
+
+			
+<!-- 		</h:form> -->
+<!-- 	</ui:define> -->
+	
+	<ui:define name="rowcontent">
+	</ui:define>
+
+     <ui:define name="handlePush">
+		<p:socket onMessage="handleTsChoosen" channel="/tariffAnalysisTsChoosen" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleTsChoosen" channel="/tariffanalysisExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+	</ui:define>
+</ui:composition>

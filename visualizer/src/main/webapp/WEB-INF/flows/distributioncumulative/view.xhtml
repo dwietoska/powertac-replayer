@@ -1,0 +1,330 @@
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	template="/WEB-INF/layouts/visualizer/master.xhtml">
+
+	<ui:define name="title">Distribution - aggregate scores</ui:define>
+
+	<ui:define name="headInclude">
+		<script type="text/javascript">
+			var distributionDynData;
+	 		 $(document).ready(
+				function() {
+					var appending = new Array("PRICE(&euro;)", "ENERGY(kWh)");
+					if (#{logParametersBean.isReplayerMode}) {
+						distributionDynData = dynDataGraph('distributionDynData',#{distributionBeanReplayer.distributionDynData},'',getBaseDynYAxisData("Price (&euro;)","Distributed energy (kWh)"), appending);
+					} else {
+						distributionDynData = dynDataGraph('distributionDynData',#{distributionBean.distributionDynData},'',getBaseDynYAxisData("Price (&euro;)","Distributed energy (kWh)"), appending);
+					}
+				});
+	  	
+			function handleDistributionPush(data) {
+				var array = jQuery.parseJSON(data);
+				var cnt = 0;
+				jQuery.each(array, function() {
+					  var pushObject = this;
+					  distributionDynData.series[cnt++].addPoint([pushObject["millis"],pushObject["profit"]],false);
+					  distributionDynData.series[cnt++].addPoint([pushObject["millis"],pushObject["energy"]],false);
+		 
+				});
+				distributionDynData.redraw();
+   		 	}
+	
+			// Zurueckgesprungen im Diagramm
+			function handleDistributionPushTsChoosenBackward(data) {
+
+				// Push Backward geht nicht, da bei vielen Timeslots im 
+				// Highchart Diagramm nicht alle Punkte dargestellt werden.
+				// Deswegen sind unter .series[index].points nicht mehr alle
+				// Punkte enthalten. Daraufhin werden nicht alle zu loeschenden 
+				// Timeslots geloescht, siehe vorheriger Code. 
+				// Andere Loesung: Schlecht: Alle Daten in JSON erstellen und neu
+				// setzen
+			
+				var pushObjects = jQuery.parseJSON(data);
+		
+				var index = 0;
+				var i = 0;
+				var tsMillis;
+				var indexPoints;
+				var selectedRange = distributionDynData.rangeSelector.selected;
+				var seriesLength = distributionDynData.series.length - 1;
+ 				var visibleSeries = [];
+		
+				var index2 = 0;
+				var cnt = 0;
+
+				// Range Selector auf ALL, sonst fehlen Werte
+				distributionDynData.rangeSelector.clickButton(5, 5, true);
+		
+				while (pushObjects.length > index) {
+			
+		  		  	var pushObject = pushObjects[index];
+		    
+ 					if (!distributionDynData.series[index].visible) {
+ 						distributionDynData.series[index].setVisible(true);
+ 						visibleSeries.push(false);
+ 					} else {
+ 						visibleSeries.push(true);
+ 					}
+ 			
+		    		distributionDynData.series[index].setData(pushObject, false);
+		    
+		   		 	index++;
+				}
+		
+				var visibleLengths = visibleSeries.length;
+				for (var i = 0; i &lt; visibleLengths; i++) {
+					if (distributionDynData.series[i] !== undefined) {
+						distributionDynData.series[i].setVisible(visibleSeries[i], false);
+					}
+				}
+		
+				distributionDynData.redraw();
+				distributionDynData.rangeSelector.clickButton(selectedRange, selectedRange, true);
+		
+		
+// 		// Auf All setzen, damit alle Werte geloescht werden koennen
+// 		// Ansonsten z.B. range auf 1w und dann werden nich alle Werte im Diagramm angezeigt
+// 		// Dadurch kommt dann beim loeschen die Meldung, distributionDynDataOneTimeslot.series[index].points[0].remove(false)
+// 		// is not a function.
+// 		// Es koennen vom Broker Model fuer eine Ts Werte fehlen, deswegen hat die obige Loesung
+// 		// auch Probleme mit is not defined geworfen
+// 		// -> Series unterschiedliche Laenge
+// 		distributionDynData.rangeSelector.clickButton(5, 5, true);
+		
+//  		while (index &lt;= seriesLength) {
+ 			
+//  			if (!distributionDynData.series[index].visible) {
+//  				distributionDynData.series[index].setVisible(true);
+//  				visibleSeries.push(false);
+//  			} else {
+//  				visibleSeries.push(true);
+//  			}
+ 			
+//  	 		indexPoints = distributionDynData.series[index].points.length - 1;
+ 	 		
+//  			i = 0;
+
+//  	 		while (indexPoints >= 0) {
+	 	
+//  	 			if (pushArray.indexOf(distributionDynData.series[index].points[indexPoints].x) >= 0) {
+ 	 				
+//  	 				distributionDynData.series[index].points[indexPoints].remove(false);
+//  	 			}
+ 	 			
+//  	 			indexPoints--;
+//  	 		}
+
+//  			index++;
+//  		}
+
+// 		var visibleLengths = visibleSeries.length;
+// 		for (var i = 0; i &lt; visibleLengths; i++) {
+// 			if (distributionDynData.series[i] !== undefined) {
+// 				distributionDynData.series[i].setVisible(visibleSeries[i], false);
+// 			}
+// 		}
+		
+// 		distributionDynData.redraw();
+// 		distributionDynData.rangeSelector.clickButton(selectedRange, selectedRange, true);
+			}
+	
+// 	// Zurueckgesprungen im Diagramm
+// 	function handleDistributionPushTsChoosenBackward(data) {
+		
+// 		var pushArray = jQuery.parseJSON(data);
+// 		var index = 0;
+// 		var i = 0;
+// 		var tsMillis;
+// 		var indexPoints;
+// 		var selectedRange = distributionDynData.rangeSelector.selected;
+// 		var seriesLength = distributionDynData.series.length - 1;
+ 			
+// // 		// Auf All setzen, damit alle Werte geloescht werden koennen
+// // 		// Ansonsten z.B. range auf 1w und dann werden nich alle Werte im Diagramm angezeigt
+// // 		// Dadurch kommt dann beim loeschen die Meldung, distributionDynDataOneTimeslot.series[index].points[0].remove(false)
+// // 		// is not a function.
+// // 		// Es koennen vom Broker Model fuer eine Ts Werte fehlen, deswegen hat die obige Loesung
+// // 		// auch Probleme mit is not defined geworfen
+// // 		// -> Series unterschiedliche Laenge
+// 		distributionDynData.rangeSelector.clickButton(5, 5, true);
+ 		
+//  		while (index &lt;= seriesLength) {
+ 	 		
+//  	 		indexPoints = distributionDynData.series[index].points.length - 1;
+//  			i = 0;
+ 			
+//  			// Alle Millis Ts durchlaufen
+//  	 		while (i &lt; pushArray.length) {
+ 	 			
+//  	 			tsMillis = pushArray[i];
+ 	 				
+//  	 			// Entspricht der letzte Punkt im Diagramm (TsMillis Wert auf der x-Achse)
+//  	 			// den zu loeschenden TsMillisWert. Diese werden rueckwaerts durchgelaufen
+//  	 			// und im Diagramm als Points geloescht. Beachtet auch, dass im Diagramm
+//  	 			// fuer einen Ts der Punkt im Diagramm fehlen kann.
+//  	 			if (distributionDynData.series[index].points[indexPoints].x == tsMillis) {
+ 	 					
+//  	 				distributionDynData.series[index].points[indexPoints].remove(false);
+//  	 	 			indexPoints--;
+//  	 			} 	 	
+ 	 			
+//  	 			i++;
+//  	 		}
+
+//  			index++;
+//  		}
+ 		
+//  		distributionDynData.redraw();
+//  		distributionDynData.rangeSelector.clickButton(selectedRange, selectedRange, true);
+// 	}
+	
+// 	// Vorspringen im Diagramm
+// 	// Nichts mehr loeschen, sondern nur noch die weiteren Nachrichten hinzufuegen.
+// 	function handleDistributionPushTsChoosen(data) {
+		
+// 		var pushObjects = jQuery.parseJSON(data);
+// 		var index = 0;
+// 		var index2 = 0;
+// 		var cnt = 0;
+// 		var selectedRange = distributionDynData.rangeSelector.selected;
+// // 		while (distributionDynDataOneTimeslot.series[0].points.length > 0) {
+		
+// // 			distributionDynDataOneTimeslot.series[0].points[0].remove(false);
+// // 			distributionDynDataOneTimeslot.series[1].points[0].remove(false);
+// // 		}
+		
+// // 		// Bei Default laenge 2, aber 3
+// // 		// Bei Mehr dann laenge 4, aber 5???
+// // 		var seriesLength = distributionDynData.series.length - 1;
+
+// // 		// Remove all series points
+// // 		while (distributionDynData.series[0].points.length > 0) {
+			
+// // 			index = 0;
+// // 			cnt = 0;
+
+// // 			while (!(index >= seriesLength)) {
+				
+// // 				distributionDynData.series[cnt++].points[0].remove(false);
+// // 				index++;
+// // 				distributionDynData.series[cnt++].points[0].remove(false);
+// // 				index++;
+// // 			}
+// // 		}
+		
+// 		index = 0;
+		
+// 		while (pushObjects.length > index) {
+			
+// 		    var pushObject = pushObjects[index];
+		    
+// 		    index2 = 0;
+// 		    cnt = 0;
+		    
+// 		    while (pushObject.length > index2) {
+
+// 		    	var object = pushObject[index2];
+// 		    	var indexSeries = object["index"];
+
+// 		    	distributionDynData.series[indexSeries++].addPoint([object["millis"],object["profit"]],false);
+// 		    	distributionDynData.series[indexSeries++].addPoint([object["millis"],object["energy"]],false);
+// 				index2++;
+// 		    }
+		    
+// 		    index++;
+// 		}
+		
+// 		distributionDynData.redraw();
+// 		distributionDynData.rangeSelector.clickButton(selectedRange, selectedRange, true); 
+// 	}
+
+			// Vorspringen im Diagramm
+			function handleDistributionPushTsChoosen(data) {
+		
+				var pushObjects = jQuery.parseJSON(data);
+				var index = 0;
+				var index2 = 0;
+				var cnt = 0;
+				var selectedRange = distributionDynData.rangeSelector.selected;
+				var visibleSeries = [];
+		
+				index = 0;
+		
+				while (pushObjects.length > index) {
+			
+		  		  	var pushObject = pushObjects[index];
+		    
+		   			index2 = 0;
+		   		 	cnt = 0;
+		    
+		   		 	while (pushObject.length > index2) {
+
+		    			var object = pushObject[index2];
+		    			var indexSeries = object["index"];
+
+	 					if (!distributionDynData.series[indexSeries].visible) {
+	 						distributionDynData.series[indexSeries].setVisible(true);
+	 						visibleSeries.push(false);
+	 					} else {
+	 						visibleSeries.push(true);
+	 					}
+	 			
+	 					distributionDynData.series[indexSeries++].addPoint([object["millis"],object["profit"]],false);
+		    
+	 					if (!distributionDynData.series[indexSeries].visible) {
+	 						distributionDynData.series[indexSeries].setVisible(true);
+	 						visibleSeries.push(false);
+	 					} else {
+	 						visibleSeries.push(true);
+	 					}
+	 			
+	 					distributionDynData.series[indexSeries++].addPoint([object["millis"],object["energy"]],false);
+						index2++;
+				    }
+			    
+				    index++;
+				}
+		
+				var visibleLengths = visibleSeries.length;
+				for (var i = 0; i &lt; visibleLengths; i++) {
+					if (distributionDynData.series[i] !== undefined) {
+						distributionDynData.series[i].setVisible(visibleSeries[i], false);
+					}
+				}
+		
+				distributionDynData.redraw();
+				distributionDynData.rangeSelector.clickButton(selectedRange, selectedRange, true); 
+			}
+		</script>
+	</ui:define>
+
+	<ui:define name="maincontent">
+					
+		<script>
+			var appending = new Array("PRICE(&euro;)", "ENERGY(kWh)");
+			distributionDynData = dynDataGraph('distributionDynData',#{distributionBeanReplayer.distributionDynData},'',getBaseDynYAxisData("Price (&euro;)","Distributed energy (kWh)"), appending);
+		</script>
+		
+		<div id="distributionDynData"
+			style="min-width: 400px; height: 620px; margin: 0 auto" />
+		<p:socket onMessage="handleDistributionPush" channel="/distributionpush" rendered="#{!logParametersBean.isReplayerMode}" />
+	</ui:define>
+
+	<ui:define name="rowcontent">
+
+	</ui:define>
+
+     <ui:define name="handlePush">
+		<p:socket onMessage="handleDistributionPushTsChoosen" channel="/distributionTsChoosen" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleDistributionPushTsChoosenBackward" channel="/tsChoosenBackward" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleDistributionPushTsChoosen" channel="/distributioncumulativeExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleDistributionPushTsChoosenBackward" channel="/distributioncumulativeBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+<!-- 		<p:socket onMessage="handleDistributionPushTsChoosenBackward" channel="/TESTCHANNEL#{session.id}" /> -->
+	</ui:define>
+
+</ui:composition>

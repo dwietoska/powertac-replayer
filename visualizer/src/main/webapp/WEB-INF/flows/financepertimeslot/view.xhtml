@@ -1,0 +1,311 @@
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	template="/WEB-INF/layouts/visualizer/master.xhtml">
+
+	<ui:define name="title">Finance - per timeslot scores</ui:define>
+
+	<ui:define name="headInclude">
+		<script type="text/javascript">
+			var financeDynDataOneTimeslot;
+	 		 $(document).ready(
+				function() {
+					var appending = new Array("PROFIT(&euro;)");
+					if (#{logParametersBean.isReplayerMode}) {
+						financeDynDataOneTimeslot = dynDataGraph('financeDynDataOneTimeslot',#{financeBeanReplayer.financeDynDataOneTimeslot},'',getOneDynYAxisData('Profit(&euro;)'), appending);
+					} else {
+						financeDynDataOneTimeslot = dynDataGraph('financeDynDataOneTimeslot',#{financeBean.financeDynDataOneTimeslot},'',getOneDynYAxisData('Profit(&euro;)'), appending);
+					}
+			});
+	  	
+			function handleFinancePush(data) {
+		
+				var array = jQuery.parseJSON(data);
+				var cnt = 0;
+				jQuery.each(array, function() {
+					  var pushObject = this;
+					  //known ordering: profit
+					  financeDynDataOneTimeslot.series[cnt++].addPoint([pushObject["millis"],pushObject["profitDelta"]],false);
+		 
+				});
+				financeDynDataOneTimeslot.redraw();
+  		  }
+    
+   		 // Zurueckgesprungen im Diagramm
+		function handlePushTsChoosenBackward(data) {
+
+			var pushObjects = jQuery.parseJSON(data);
+		
+			var index = 0;
+			var i = 0;
+			var tsMillis;
+			var indexPoints;
+			var selectedRange = financeDynDataOneTimeslot.rangeSelector.selected;
+			var seriesLength = financeDynDataOneTimeslot.series.length - 1;
+ 			var visibleSeries = [];
+		
+			var index2 = 0;
+			var cnt = 0;
+
+			// Range Selector auf ALL, sonst fehlen Werte
+			financeDynDataOneTimeslot.rangeSelector.clickButton(5, 5, true);
+		
+			while (pushObjects.length > index) {
+			
+		  	  var pushObject = pushObjects[index];
+			    
+ 				if (!financeDynDataOneTimeslot.series[index].visible) {
+ 					financeDynDataOneTimeslot.series[index].setVisible(true);
+ 					visibleSeries.push(false);
+ 				} else {
+ 					visibleSeries.push(true);
+ 				}
+ 			
+ 				financeDynDataOneTimeslot.series[index].setData(pushObject, false);
+		    
+		 	   index++;
+			}
+		
+			var visibleLengths = visibleSeries.length;
+			for (var i = 0; i &lt; visibleLengths; i++) {
+				if (financeDynDataOneTimeslot.series[i] !== undefined) {
+					financeDynDataOneTimeslot.series[i].setVisible(visibleSeries[i], false);
+				}
+			}
+			
+			financeDynDataOneTimeslot.redraw();
+			financeDynDataOneTimeslot.rangeSelector.clickButton(selectedRange, selectedRange, true);
+		
+		
+//		var pushArray = jQuery.parseJSON(data);
+//		var index = 0;
+//		var i = 0;
+//		var tsMillis;
+//		var indexPoints;
+//		var selectedRange = financeDynDataOneTimeslot.rangeSelector.selected;
+//		var seriesLength = financeDynDataOneTimeslot.series.length - 1;
+//		var visibleSeries = [];
+		
+// 		// Auf All setzen, damit alle Werte geloescht werden koennen
+// 		// Ansonsten z.B. range auf 1w und dann werden nich alle Werte im Diagramm angezeigt
+// 		// Dadurch kommt dann beim loeschen die Meldung, distributionDynDataOneTimeslot.series[index].points[0].remove(false)
+// 		// is not a function.
+// 		// Es koennen vom Broker Model fuer eine Ts Werte fehlen, deswegen hat die obige Loesung
+// 		// auch Probleme mit is not defined geworfen
+// 		// -> Series unterschiedliche Laenge
+			financeDynDataOneTimeslot.rangeSelector.clickButton(5, 5, true);
+ 		
+ //		while (index &lt;= seriesLength) {
+ 			
+ //			if (!financeDynDataOneTimeslot.series[index].visible) {
+ //				financeDynDataOneTimeslot.series[index].setVisible(true);
+ //				visibleSeries.push(false);
+ //			} else {
+ //				visibleSeries.push(true);
+ //			}
+ 			
+ //	 		indexPoints = financeDynDataOneTimeslot.series[index].points.length - 1;
+
+ //			i = 0;
+ 	 						
+ //	 		while (indexPoints >= 0) {
+
+ //	 			if (pushArray.indexOf(financeDynDataOneTimeslot.series[index].points[indexPoints].x) >= 0) {
+
+ //	 				financeDynDataOneTimeslot.series[index].points[indexPoints].remove(false);
+ //	 			}
+ 	 			
+ //	 			indexPoints--;
+ //	 		}
+
+ //			index++;
+ //		}
+ 		
+//		var visibleLengths = visibleSeries.length;
+//		for (var i = 0; i &lt; visibleLengths; i++) {
+//			if (financeDynDataOneTimeslot.series[i] !== undefined) {
+//				financeDynDataOneTimeslot.series[i].setVisible(visibleSeries[i], false);
+//			}
+//		}
+		
+//		financeDynDataOneTimeslot.redraw();
+//		financeDynDataOneTimeslot.rangeSelector.clickButton(selectedRange, selectedRange, true);
+		}
+	
+ //   		// Zurueckgesprungen im Diagramm
+ //			function handlePushTsChoosenBackward(data) {
+				
+ //				var pushArray = jQuery.parseJSON(data);
+ //				var index = 0;
+ //				var i = 0;
+ //				var tsMillis;
+ //				var indexPoints;
+ //				var selectedRange = financeDynDataOneTimeslot.rangeSelector.selected;
+ //				var seriesLength = financeDynDataOneTimeslot.series.length - 1;
+		 			
+ ////		 		// Auf All setzen, damit alle Werte geloescht werden koennen
+ ////		 		// Ansonsten z.B. range auf 1w und dann werden nich alle Werte im Diagramm angezeigt
+ ////		 		// Dadurch kommt dann beim loeschen die Meldung, distributionDynDataOneTimeslot.series[index].points[0].remove(false)
+ ////		 		// is not a function.
+ ////		 		// Es koennen vom Broker Model fuer eine Ts Werte fehlen, deswegen hat die obige Loesung
+ ////		 		// auch Probleme mit is not defined geworfen
+ ////		 		// -> Series unterschiedliche Laenge
+ //				financeDynDataOneTimeslot.rangeSelector.clickButton(5, 5, true);
+		 		
+ //		 		while (index &lt;= seriesLength) {
+		 	 		
+ //		 	 		indexPoints = financeDynDataOneTimeslot.series[index].points.length - 1;
+ //		 			i = 0;
+		 			
+ //		 			// Alle Millis Ts durchlaufen
+ //		 	 		while (i &lt; pushArray.length) {
+		 	 			
+ //		 	 			tsMillis = pushArray[i];
+		 	 				
+ //		 	 			// Entspricht der letzte Punkt im Diagramm (TsMillis Wert auf der x-Achse)
+ //		 	 			// den zu loeschenden TsMillisWert. Diese werden rueckwaerts durchgelaufen
+ //		 	 			// und im Diagramm als Points geloescht. Beachtet auch, dass im Diagramm
+ //		 	 			// fuer einen Ts der Punkt im Diagramm fehlen kann.
+ //		 	 			if (financeDynDataOneTimeslot.series[index].points[indexPoints].x == tsMillis) {
+		 	 					
+ //		 	 				financeDynDataOneTimeslot.series[index].points[indexPoints].remove(false);
+ //		 	 	 			indexPoints--;
+ //		 	 			} 	 	
+		 	 			
+ //		 	 			i++;
+ //		 	 		}
+
+ //		 			index++;
+ //		 		}
+		 		
+ //		 		financeDynDataOneTimeslot.redraw();
+ //		 		financeDynDataOneTimeslot.rangeSelector.clickButton(selectedRange, selectedRange, true);
+ //			}
+
+
+	// Vorspringen im Diagramm
+	function handleFinancePushTsChoosen(data) {
+		
+		var pushObjects = jQuery.parseJSON(data);
+		var index = 0;
+		var index2 = 0;
+		var cnt = 0;
+		var selectedRange = financeDynDataOneTimeslot.rangeSelector.selected;
+		var visibleSeries = [];
+		
+		index = 0;
+		
+		while (pushObjects.length > index) {
+			
+		    var pushObject = pushObjects[index];
+		    
+		    index2 = 0;
+		    cnt = 0;
+		    
+		    while (pushObject.length > index2) {
+
+		    	var object = pushObject[index2];
+		    	var indexSeries = object["index"];
+
+	 			if (!financeDynDataOneTimeslot.series[indexSeries].visible) {
+	 				financeDynDataOneTimeslot.series[indexSeries].setVisible(true);
+	 				visibleSeries.push(false);
+	 			} else {
+	 				visibleSeries.push(true);
+	 			}
+	 			
+	 			financeDynDataOneTimeslot.series[indexSeries++].addPoint([object["millis"],object["profitDelta"]],false);
+				index2++;
+		    }
+		    
+		    index++;
+		}
+		
+		var visibleLengths = visibleSeries.length;
+		for (var i = 0; i &lt; visibleLengths; i++) {
+			if (financeDynDataOneTimeslot.series[i] !== undefined) {
+				financeDynDataOneTimeslot.series[i].setVisible(visibleSeries[i], false);
+			}
+		}
+		
+		financeDynDataOneTimeslot.redraw();
+		financeDynDataOneTimeslot.rangeSelector.clickButton(selectedRange, selectedRange, true); 
+	}
+
+//			function handleFinancePushTsChoosen(data) {
+//				var pushObjects = jQuery.parseJSON(data);
+//				var index = 0;
+//				var index2 = 0;
+//				var cnt = 0;
+//				var selectedRange = financeDynDataOneTimeslot.rangeSelector.selected;
+				
+//				// Bei Default laenge 2, aber 3
+//				// Bei Mehr dann laenge 4, aber 5???
+//				// var seriesLength = financeDynDataOneTimeslot.series.length - 1;
+
+//				// Remove all series points
+//				// while (financeDynDataOneTimeslot.series[0].points.length > 0) {
+					
+//				//	index = 0;
+//				//	cnt = 0;
+
+//				//	while (!(index >= seriesLength)) {
+						
+//				//		financeDynDataOneTimeslot.series[cnt++].points[0].remove(false);
+//				//		index++;
+//				//	}
+//				// }
+				
+//				// index = 0;
+				
+//				while (pushObjects.length > index) {
+					
+//				    var pushObject = pushObjects[index];
+				    
+//				    index2 = 0;
+//				    cnt = 0;
+				    
+//				    while (pushObject.length > index2) {
+
+//				    	var object = pushObject[index2];
+//				    	var indexSeries = object["index"];
+
+//				    	financeDynDataOneTimeslot.series[indexSeries].addPoint([object["millis"],object["profitDelta"]],false);
+//						index2++;
+//				    }
+				    
+//				    index++;
+//				}
+				
+//				financeDynDataOneTimeslot.redraw();
+//				financeDynDataOneTimeslot.rangeSelector.clickButton(selectedRange, selectedRange, true);
+//			} 
+		</script>
+	</ui:define>
+
+	<ui:define name="maincontent">
+	
+		<script>
+			var appending = new Array("PROFIT(&euro;)");
+			financeDynDataOneTimeslot = dynDataGraph('financeDynDataOneTimeslot',#{financeBeanReplayer.financeDynDataOneTimeslot},'',getOneDynYAxisData('Profit(&euro;)'), appending);
+		</script>
+		
+		<div id="financeDynDataOneTimeslot"
+			style="min-width: 400px; height: 620px; margin: 0 auto" />
+		<p:socket onMessage="handleFinancePush" channel="/financepush" rendered="#{!logParametersBean.isReplayerMode}" />
+	</ui:define>
+
+	<ui:define name="rowcontent">
+	</ui:define>
+
+     <ui:define name="handlePush">
+		<p:socket onMessage="handleFinancePushTsChoosen" channel="/financeTsChoosen" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handlePushTsChoosenBackward" channel="/tsChoosenBackward" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleFinancePushTsChoosen" channel="/financepertimeslotExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handlePushTsChoosenBackward" channel="/financepertimeslotBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+	</ui:define>
+
+</ui:composition>
