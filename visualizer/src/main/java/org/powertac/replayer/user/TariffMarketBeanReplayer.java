@@ -113,7 +113,7 @@ public class TariffMarketBeanReplayer implements Serializable {
 				&& tariffDynamicData != null
 				&& listTariffDataAttributes != null && competition != null
 				&& visualizerBeanAttributes != null && appearances != null) {
-			
+		
 			brokerNames = competition.getBrokers();
 			currentTimeslot = logParametersBean.getTimeslot();
 			startNumberTimeslot = logDAOImplExtended.getStartNumberTimeslot();
@@ -132,10 +132,12 @@ public class TariffMarketBeanReplayer implements Serializable {
 				listTariffDataAttributesSortedBroker[i] = new LinkedList<TariffDataAttributes>();
 			}
 
+			if (listTariffDataAttribute != null) {
 			for (TariffDataAttributes tariffDataAttributes : listTariffDataAttribute) {
 				listTariffDataAttributesSortedBroker[mapBrokerArrayAssign
 						.get(tariffDataAttributes.getBrokerName())]
 						.add(tariffDataAttributes);
+			}
 			}
 
 			for (String brokerName : brokerNames) {
@@ -306,7 +308,7 @@ public class TariffMarketBeanReplayer implements Serializable {
 						kwhDataOneTimeslot.add(kWhOneTimeslot);
 					}
 				}
-
+	
 				if (isDummy) {
 					// dummy:
 					double[] dummy = { helper.getMillisForIndex(0,
@@ -345,17 +347,20 @@ public class TariffMarketBeanReplayer implements Serializable {
 								.getColorCode(), 2, true,
 						customerNumberDataOneTimeslot, false));
 
+				if (tariffCategoryAttributes[posIndex + numberOfBrokers * endNumberTimeslot] != null) {
 				customerStaticticsArray.add(new CustomerStatisticsTemplate(
 						brokerName, appearance.getColorCode(),
 						tariffCategoryAttributes[posIndex + numberOfBrokers
 								* endNumberTimeslot].getCustomerCount(),
 						customerStatisticsBroker));
+				}
 
 				listTariffDataAttributeSortedBroker = listTariffDataAttributesSortedBroker[posIndex];
 
 				for (TariffDataAttributes tariffDataAttribute : listTariffDataAttributeSortedBroker) {
 					allTarifsReplayer.add(tariffDataAttribute);
 				}
+
 			}// end BROKER for loop
 			
 			this.tariffDynData = gson.toJson(tariffData);

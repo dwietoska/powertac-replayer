@@ -10,9 +10,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.regex.Pattern;
 
 import javax.faces.application.FacesMessage;
@@ -30,8 +33,6 @@ import org.powertac.replayer.utils.Helper;
 import org.powertac.replayer.utils.Mode;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.event.SlideEndEvent;
-import org.primefaces.push.PushContext;
-import org.primefaces.push.PushContextFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.context.annotation.Scope;
@@ -110,12 +111,14 @@ public class LogParametersBean implements Serializable {
 	/**
 	 * Contains the current mode. Default is normal mode.
 	 */
-	private String mode = "normal";
+	private String mode;
+//	private String mode = "normal";
 
 	/**
 	 * Contains the choosen mode.
 	 */
-	private Mode choosenMode = Mode.NORMAL;
+	private Mode choosenMode;
+//	private Mode choosenMode = Mode.NORMAL;
 
 	/**
 	 * Current timeslot of the slider.
@@ -140,7 +143,8 @@ public class LogParametersBean implements Serializable {
 	/**
 	 * Says if the extended mode was selected.
 	 */
-	private boolean isExtendedMode = false;
+	private boolean isExtendedMode;
+//	private boolean isExtendedMode = false;
 	  
 	/**
 	 * Contains the choosen file for replaying.
@@ -213,17 +217,39 @@ public class LogParametersBean implements Serializable {
 	private String urlString;
 	
 	/**
+	 * Specifies whether it is the first game.
+	 */
+	private boolean isFirstRun;
+	
+	/**
+	 * Specifies whether replayer webflow was called.
+	 */
+	private boolean isReplayerUrl;
+	
+	/**
+	 * Display template for progress bar.
+	 */
+	private String labelTemplateProgressBar;
+
+	/**
 	 * Construct new LogParametersBean.
 	 */
 	public LogParametersBean() {
 		
+		this.labelTemplateProgressBar = "{value}%";
 		this.showBreakButton = false;
 		this.isAllDataLoad = false;
 		this.isReplayerRunning = false;
 		this.disableSelectOneButton = false;
 		this.disableSpinner = true;
 		this.disableFileUpload = false;
+		this.isFirstRun = true;
 		this.tsClockRate = Helper.DEFAULT_TS_CLOCK_RATE;
+		this.isReplayerUrl = false;
+		
+		this.isExtendedMode = true;
+		this.choosenMode = Mode.EXTENTED;
+		this.mode = "extended";
 	}
 	
 	/**
@@ -234,10 +260,12 @@ public class LogParametersBean implements Serializable {
 	 */
 	public void setLogFileUrl(String urlString) {
 		
-		if (!this.getisReplayerRunning() && urlString != null && 
-				!urlString.isEmpty()) {
+		// !this.getisReplayerRunning() && 
+		if (urlString != null && !urlString.isEmpty()) { 
 
 			this.urlString = urlString;
+			this.labelTemplateProgressBar = "{value}%";
+			this.progress = 0;
 			
 			shutDown();
 			
@@ -252,11 +280,14 @@ public class LogParametersBean implements Serializable {
 			this.choosenMode = Mode.EXTENTED;
 			this.mode = "extended";
 			
+            this.isReplayerUrl = true;
+			
 			FacesContext context = FacesContext.getCurrentInstance();
-			context.addMessage("anotherkey", 
+			context.addMessage(null, 
 					new FacesMessage(FacesMessage.SEVERITY_INFO, 
 					"Info", 
-					"File will load. This process may take several minutes"));
+					"File will download. This process may take several minutes."
+					+ " Please wait and do not reload the page."));
 		}
 	}
 	
@@ -265,10 +296,10 @@ public class LogParametersBean implements Serializable {
 	 * or state file.
 	 */
 	public void createLogFile() {
-		
-		if (!this.getisReplayerRunning() && urlString != null && 
-				!urlString.isEmpty()) {
-
+	
+		// !this.getisReplayerRunning() && 
+		if (urlString != null && !urlString.isEmpty()) { 
+	
 			if (!(urlString.endsWith(END_OF_FILE_STATE) || 
 					urlString.endsWith(END_OF_FILE_TAR))) {
 					
@@ -283,61 +314,136 @@ public class LogParametersBean implements Serializable {
 				this.disableSpinner = true;
 				this.disableFileUpload = false;
 				
-				this.urlString = null;	
+				this.urlString = null;		
 				return;
 			} 
 			
+			File fileNew = null;
+			String md5 = this.getMD5(urlString);
+			
 			try {
-
-				FacesContext fc = FacesContext.getCurrentInstance();
-				HttpSession session = (HttpSession) fc.getExternalContext()
-						.getSession(false);
-				this.sessionId = session.getId();
-
-				URL url = new URL(urlString);
-				URLConnection con = url.openConnection();
-
-				File file = null;
 				
-				if (urlString.endsWith(END_OF_FILE_STATE)) {
+				this.chooseFile = new File(Helper.PATH_WEBFLOW_LOG_FILES + md5
+						+ LogParametersBean.END_OF_FILE_STATE);
+
+				if (this.chooseFile != null && this.chooseFile.exists()) {
 					
-					file = new File(this.sessionId + END_OF_FILE_STATE);
-				} else {
-					
-					file = new File(this.sessionId + END_OF_FILE_TAR);
-				}
-				
-				BufferedInputStream bis = new BufferedInputStream(
-						con.getInputStream());
-				FileOutputStream fos1 = new FileOutputStream(file.getName());
-				BufferedOutputStream bos = new BufferedOutputStream(fos1);
-
-				int i;
-
-				while ((i = bis.read()) != -1) {
-					
-					bos.write(i);
-				}
-
-				bis.close();
-				bos.flush();
-				bos.close();
-				
-				if (urlString.endsWith(END_OF_FILE_STATE)) {
-
+					// file exist
 					String[] nameContent = urlString.split("/");
-					processStateFile(nameContent[nameContent.length - 1], 
-							new FileInputStream(file));
+					this.chooseFilename = nameContent[nameContent.length - 1];
 				} else {
 					
-					processTarGzArchiv(new FileInputStream(file));
-				}
-		
-				file.delete();
+					// Download file and save on hard disk
+					this.chooseFile = null;
+					
+					FacesContext fc = FacesContext.getCurrentInstance();
+					HttpSession session = (HttpSession) fc.getExternalContext()
+							.getSession(false);
+					this.sessionId = session.getId();
+					
+					if (urlString.endsWith(END_OF_FILE_STATE)) {
+						
+						fileNew = new File(this.sessionId + END_OF_FILE_STATE);
+					} else {
+						
+						fileNew = new File(this.sessionId + END_OF_FILE_TAR);
+					}
+					
+					// Download File
+					URL url = new URL(urlString);
+					URLConnection con = url.openConnection();
+					
+					BufferedInputStream bis = new BufferedInputStream(
+							con.getInputStream());
+					FileOutputStream fos1 = new FileOutputStream(fileNew.getName());
+					BufferedOutputStream bos = new BufferedOutputStream(fos1);
+	
+					int i;
+	
+					while ((i = bis.read()) != -1) {
+						
+						bos.write(i);
+					}
+	
+					bis.close();
+					bos.flush();
+					bos.close();
 
+					// Process tar or state.
+					if (urlString.endsWith(END_OF_FILE_STATE)) {
+	
+						String[] nameContent = urlString.split("/");
+						processStateFile(Helper.PATH_WEBFLOW_LOG_FILES + 
+								md5 + END_OF_FILE_STATE, 
+								nameContent[nameContent.length - 1], 
+								new FileInputStream(fileNew));
+					} else {
+						
+						processTarGzArchiv(Helper.PATH_WEBFLOW_LOG_FILES + 
+								md5 + END_OF_FILE_STATE, 
+								new FileInputStream(fileNew));
+					}
+				}
+				
 				this.isFileUploaded = true;
 				this.urlString = null;
-				run();
+				
+				//------------------
+//				FacesContext fc = FacesContext.getCurrentInstance();
+//				HttpSession session = (HttpSession) fc.getExternalContext()
+//						.getSession(false);
+//				this.sessionId = session.getId();
+//
+//				File file = null;
+//				
+//				if (urlString.endsWith(END_OF_FILE_STATE)) {
+//					
+//					file = new File(this.sessionId + END_OF_FILE_STATE);
+//				} else {
+//					
+//					file = new File(this.sessionId + END_OF_FILE_TAR);
+//				}
+//				
+//				// Download File
+//				URL url = new URL(urlString);
+//				URLConnection con = url.openConnection();
+//				
+//				BufferedInputStream bis = new BufferedInputStream(
+//						con.getInputStream());
+//				FileOutputStream fos1 = new FileOutputStream(file.getName());
+//				BufferedOutputStream bos = new BufferedOutputStream(fos1);
+//
+//				int i;
+//
+//				while ((i = bis.read()) != -1) {
+//					
+//					bos.write(i);
+//				}
+//
+//				bis.close();
+//				bos.flush();
+//				bos.close();
+//
+//				// Process tar or state.
+//				if (urlString.endsWith(END_OF_FILE_STATE)) {
+//
+//					String[] nameContent = urlString.split("/");
+//					processStateFile(nameContent[nameContent.length - 1], 
+//							new FileInputStream(file));
+//				} else {
+//					
+//					processTarGzArchiv(new FileInputStream(file));
+//				}
+//		
+//				file.delete();
+//
+//				this.isFileUploaded = true;
+//				this.urlString = null;
+				
+////----------------------------------				
+//				runInit();
+////----------------------------------				
+//				run();
 				
 			} catch (MalformedURLException e) {	
 				handleErrorCreateStateFile();
@@ -345,8 +451,39 @@ public class LogParametersBean implements Serializable {
 				handleErrorCreateStateFile();
 			} catch (IOException e) {
 				handleErrorCreateStateFile();
+			} catch (Exception e) {
+				handleErrorCreateStateFile();
+			} finally {
+				if (fileNew != null) {
+					fileNew.delete();
+				}
 			}
 		}
+	}
+	
+	/**
+	 * Saves the given name in a md5 hash.
+	 * @param name Name
+	 * @return md5 hash
+	 */
+	public String getMD5(String name) {
+
+		String md5 = null;
+		MessageDigest m;
+
+		try {
+
+			if (name != null) {
+				
+				m = MessageDigest.getInstance("MD5");
+				m.update(name.getBytes(), 0, name.length());
+				md5 = new BigInteger(1, m.digest()).toString(16);
+			}
+		} catch (NoSuchAlgorithmException e) {
+		} catch (Exception e) {
+		}
+
+		return md5;
 	}
 	
 	/**
@@ -354,6 +491,8 @@ public class LogParametersBean implements Serializable {
 	 */
 	public void handleErrorCreateStateFile() {
 		
+		this.chooseFile = null;
+
 		this.isFileUploaded = false;
 		
 		this.showBreakButton = false;
@@ -386,25 +525,36 @@ public class LogParametersBean implements Serializable {
 
 			// State-File was uploaded.
 			try {
-		
-				processStateFile(event.getFile().getFileName(), event.getFile()
+				
+				processStateFile(Helper.PATH_LOG_FILES + sessionId + 
+						END_OF_FILE_STATE,
+						event.getFile().getFileName(), event.getFile()
 						.getInputstream());
+//				processStateFile(event.getFile().getFileName(), event.getFile()
+//						.getInputstream());
 				this.isFileUploaded = true;
 			} catch (IOException e) {
-				e.printStackTrace();
+				handleErrorCreateStateFile();
 			}
 		} else if (event.getFile().getFileName().endsWith(END_OF_FILE_TAR)) {
 
 			// Tar-Archive was uploaded.
-			
 			try {
 				
-				processTarGzArchiv(event.getFile().getInputstream());
+				processTarGzArchiv(Helper.PATH_LOG_FILES + this.sessionId +
+						END_OF_FILE_STATE, 
+						event.getFile().getInputstream());
+//				processTarGzArchiv(event.getFile().getInputstream());
 				isFileUploaded = true;
 			} catch (MalformedURLException e) {
+				handleErrorCreateStateFile();
 			} catch (FileNotFoundException e) {
+				handleErrorCreateStateFile();
 			} catch (IOException e) {
-			}
+				handleErrorCreateStateFile();
+			} catch (Exception e) {
+				handleErrorCreateStateFile();
+			} 
 		}
 	}
 	
@@ -412,11 +562,13 @@ public class LogParametersBean implements Serializable {
 	 * Processes the state-file. Creates a new file (The filename 
 	 * consists of the session-id) which contains the state-file.
 	 * 
-	 * @param filename 
-	 * @param inputStream Stream for state-file
+	 * @param filenameFolder Filename in folder.
+	 * @param filename Filename.
+	 * @param inputStream Stream for state-file.
 	 * @throws IOException Stream could not be processed.
 	 */
-	public void processStateFile(String filename, InputStream inputStream) 
+	public void processStateFile(String filenameFolder, 
+			String filename, InputStream inputStream) 
 			throws IOException {
 		
 		this.chooseFilename = filename;
@@ -424,8 +576,9 @@ public class LogParametersBean implements Serializable {
 		OutputStream outputStream = null;
 		this.chooseFile = null;
 
-		this.chooseFile = new File(Helper.PATH_LOG_FILES + sessionId
-				+ END_OF_FILE_STATE);
+//		this.chooseFile = new File(Helper.PATH_LOG_FILES + sessionId
+//				+ END_OF_FILE_STATE);
+		this.chooseFile = new File(filenameFolder);
 
 		outputStream = new FileOutputStream(this.chooseFile);
 
@@ -460,12 +613,13 @@ public class LogParametersBean implements Serializable {
 	 * Processes the log archive. Only .state files are loaded and saved
 	 * in directory log. The name consists of session-id and .state extension.
 	 * 
+	 * @param filenameFolder Filename in folder.
 	 * @param input Tar-archive as input stream.
 	 * @throws MalformedURLException Error.
 	 * @throws FileNotFoundException File not found.
 	 * @throws IOException Stream could not be processed.
 	 */
-	public void processTarGzArchiv(InputStream input) 
+	public void processTarGzArchiv(String filenameFolder, InputStream input) 
 			throws MalformedURLException, FileNotFoundException, IOException {
 
 		BufferedInputStream in = new BufferedInputStream(input);
@@ -488,8 +642,9 @@ public class LogParametersBean implements Serializable {
 				byte data[] = new byte[BUFFER];
 
 				this.chooseFilename = filename;
-				this.chooseFile = new File(Helper.PATH_LOG_FILES
-						+ this.sessionId + END_OF_FILE_STATE); // this.chooseFilename
+//				this.chooseFile = new File(Helper.PATH_LOG_FILES
+//						+ this.sessionId + END_OF_FILE_STATE); // this.chooseFilename
+				this.chooseFile = new File(filenameFolder);
 
 				FileOutputStream fos = new FileOutputStream(
 						this.getChooseFile());
@@ -534,9 +689,9 @@ public class LogParametersBean implements Serializable {
 	 */
 	public void actionBeforeReplaying() {
 
-		if (this.getisReplayerRunning()) {
-			return;
-		}
+//		if (this.getisReplayerRunning()) {
+//			return;
+//		}
 
 		this.showBreakButton = false;
 		this.isAllDataLoad = false;
@@ -546,89 +701,94 @@ public class LogParametersBean implements Serializable {
 		this.disableSelectOneButton = true;
 		this.disableSpinner = true;
 		this.disableFileUpload = true;
+		
+		this.labelTemplateProgressBar = "{value}%";
+		this.progress = 0;
 	}
 	
-	/**
-	 * Executes the selected game.
-	 */
-	public void run() {
-
-		if (this.getisReplayerRunning()) {
-			FacesContext context = FacesContext.getCurrentInstance();
-			context.addMessage(null, new FacesMessage(
-					FacesMessage.SEVERITY_WARN, "Warning", 
-					"A game is running already"));
-			return;
-		}
-
-		if (!this.isFileUploaded) {
-
-			this.isAllDataLoad = false;	
-			this.disableSelectOneButton = false;
-			this.disableSpinner = true;
-			this.disableFileUpload = false;
-			return;
-		}
-
-		if (this.getChooseFile() == null) {
-
-			FacesContext context = FacesContext.getCurrentInstance();
-			context.addMessage(null, new FacesMessage(
-					FacesMessage.SEVERITY_WARN, "Warning", 
-					"No File is choosen"));
-			return;
-		}
-		
-		// Strategy Pattern
-		this.currentRunner = runnerStrategyFactory.getStrategy(this
-				.getChoosenMode().toString());
-		
-		try {
-			
-			// Run
-			this.currentRunner.run(this.getChooseFile(), 
-					this.getTsClockRate());
-			
-			// Sets variables for enable and disable.
-			this.setReplayerRunning(true);
-			this.showBreakButton = true;
-			this.isAllDataLoad = true;
-			this.disableSpinner = false;
-			this.disableFileUpload = true;
-						
-			// Send message
-			PushContext pushContext = PushContextFactory.getDefault()
-					.getPushContext();
-					
-			if (pushContext != null) {
-				
-				pushContext.push("/dataComplete" + sessionId, "");
-			}
-			
-			FacesContext context = FacesContext.getCurrentInstance();
-			context.addMessage(null, new FacesMessage(
-					FacesMessage.SEVERITY_INFO, "Info", 
-					"The game started successfully."));
-		} catch (ErrorReadDomainObject exception) {
-			
-			// Sets Variables for enable and disable.
-			this.disableSpinner = true;
-			this.disableFileUpload = false;
-
-			// Error-Message
-			String errorMessage = "";
-			
-			if (exception.getLine() != null) {
-				errorMessage = "Line: " + exception.getLine() + " \n ";
-			}
-			
-			errorMessage += exception.getMessage();
-	
-			FacesContext context = FacesContext.getCurrentInstance();
-			context.addMessage(null, new FacesMessage(
-					FacesMessage.SEVERITY_ERROR, "Error", errorMessage));
-		}
-	}
+//	/**
+//	 * Executes the selected game.
+//	 * Previous solution. All data are loaded in method.
+//	 * Waits until all data are loaded.
+//	 */
+//	public void run() {
+//
+//		if (this.getisReplayerRunning()) {
+//			FacesContext context = FacesContext.getCurrentInstance();
+//			context.addMessage(null, new FacesMessage(
+//					FacesMessage.SEVERITY_WARN, "Warning", 
+//					"A game is running already"));
+//			return;
+//		}
+//
+//		if (!this.isFileUploaded) {
+//
+//			this.isAllDataLoad = false;	
+//			this.disableSelectOneButton = false;
+//			this.disableSpinner = true;
+//			this.disableFileUpload = false;
+//			return;
+//		}
+//
+//		if (this.getChooseFile() == null) {
+//
+//			FacesContext context = FacesContext.getCurrentInstance();
+//			context.addMessage(null, new FacesMessage(
+//					FacesMessage.SEVERITY_WARN, "Warning", 
+//					"No File is choosen"));
+//			return;
+//		}
+//		
+//		// Strategy Pattern
+//		this.currentRunner = runnerStrategyFactory.getStrategy(this
+//				.getChoosenMode().toString());
+//		
+//		try {
+//			
+//			// Run
+//			this.currentRunner.run(this.getChooseFile(), 
+//					this.getTsClockRate());
+//			
+//			// Sets variables for enable and disable.
+//			this.setReplayerRunning(true);
+//			this.showBreakButton = true;
+//			this.isAllDataLoad = true;
+//			this.disableSpinner = false;
+//			this.disableFileUpload = true;
+//						
+//			// Send message
+//			PushContext pushContext = PushContextFactory.getDefault()
+//					.getPushContext();
+//					
+//			if (pushContext != null) {
+//				
+//				pushContext.push("/dataComplete" + sessionId, "");
+//			}
+//			
+//			FacesContext context = FacesContext.getCurrentInstance();
+//			context.addMessage(null, new FacesMessage(
+//					FacesMessage.SEVERITY_INFO, "Info", 
+//					"The game started successfully."));
+//		} catch (ErrorReadDomainObject exception) {
+//			
+//			// Sets Variables for enable and disable.
+//			this.disableSpinner = true;
+//			this.disableFileUpload = false;
+//
+//			// Error-Message
+//			String errorMessage = "";
+//			
+//			if (exception.getLine() != null) {
+//				errorMessage = "Line: " + exception.getLine() + " \n ";
+//			}
+//			
+//			errorMessage += exception.getMessage();
+//	
+//			FacesContext context = FacesContext.getCurrentInstance();
+//			context.addMessage(null, new FacesMessage(
+//					FacesMessage.SEVERITY_ERROR, "Error", errorMessage));
+//		}
+//	}
 
 	/**
 	 * Stops the replaying game.
@@ -731,6 +891,151 @@ public class LogParametersBean implements Serializable {
     	// Continue
     	this.currentRunner.continueReplayer(this.tsClockRate, this.timeslot);
     }
+	
+	/**
+	 * Starts the method which reads init data and starts the time slot thread.
+	 */
+	public void runInit() {
+
+		this.isReplayerUrl = false;
+
+//		System.out.println("runInit Client");
+
+		String result = null;
+		// String message;
+		if (this.getisReplayerRunning()) {
+			FacesContext context = FacesContext.getCurrentInstance();
+			context.getExternalContext().getFlash().setKeepMessages(true);
+			context.addMessage(null, new FacesMessage(
+					FacesMessage.SEVERITY_WARN, "Warning",
+					"A game is running already"));
+			return;
+		}
+
+		if (!this.isFileUploaded) {
+			// File was not uploaded
+			// this.isLoadingData = false;
+			// this.isAllDataLoad = true;
+			this.isAllDataLoad = false;
+			this.disableSelectOneButton = false;
+			this.disableSpinner = true;
+			this.disableFileUpload = false;
+			return;
+		}
+
+//		System.out.println("run Bearbeitung");
+
+		if (this.getChooseFile() == null) {
+
+			FacesContext context = FacesContext.getCurrentInstance();
+			context.addMessage(null,
+					new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning",
+							"No File is choosen"));
+			return;
+		}
+
+		// this.showBreakButton = false;
+		// this.isAllDataLoad = false;
+
+		// Strategy Pattern
+		this.currentRunner = runnerStrategyFactory.getStrategy(this
+				.getChoosenMode().toString());
+
+		try {
+
+			this.currentRunner.runInit(this.getChooseFile(),
+					this.getTsClockRate());
+
+			this.setReplayerRunning(true);
+			// this.setShowStartButton(false);
+			this.showBreakButton = true;
+			this.isAllDataLoad = true;
+			this.disableSpinner = false;
+			this.disableFileUpload = true;
+			this.isFirstRun = false;
+
+			FacesContext context = FacesContext.getCurrentInstance();
+			context.addMessage(null, new FacesMessage(
+					FacesMessage.SEVERITY_INFO, "Info",
+					"The game started successfully."));
+		} catch (ErrorReadDomainObject exception) {
+
+			this.disableSpinner = true;
+			this.disableFileUpload = false;
+
+			String errorMessage = "";
+
+			if (exception.getLine() != null) {
+				errorMessage = "Line: " + exception.getLine() + " \n ";
+			}
+
+			errorMessage += exception.getMessage();
+
+			FacesContext context = FacesContext.getCurrentInstance();
+			context.addMessage(null, new FacesMessage(
+					FacesMessage.SEVERITY_ERROR, "Error", errorMessage));
+		}
+	}
+		
+	/**
+	 * Starts the method which reads and saves all data in a background thread.
+	 */
+	public void run() {
+//		System.out.println("run Client");
+		String result = null;
+
+		if (!this.getisReplayerRunning()) {
+			// Error in RunInit
+			return;
+		}
+
+		if (!this.isFileUploaded) {
+
+			FacesContext context = FacesContext.getCurrentInstance();
+			context.addMessage(null, new FacesMessage(
+					FacesMessage.SEVERITY_ERROR, "Error", "File not uploaded"));
+			return;
+		}
+
+		try {
+
+			result = this.currentRunner.run(this.getChooseFile(),
+					this.getTsClockRate());
+
+		} catch (ErrorReadDomainObject exception) {
+
+			this.disableSpinner = true;
+			this.disableFileUpload = false;
+
+			String errorMessage = "";
+
+			if (exception.getLine() != null) {
+				errorMessage = "Line: " + exception.getLine() + " \n ";
+			}
+
+			errorMessage += exception.getMessage();
+			FacesContext context = FacesContext.getCurrentInstance();
+			context.addMessage(null, new FacesMessage(
+					FacesMessage.SEVERITY_ERROR, "Error", errorMessage));
+		}
+	}
+	
+	/**
+	 * The background thread which sends all data calls this method 
+	 * when an error occurred. 
+	 */
+	public void errorReadFile() {
+		
+		String errorMsg = FacesContext.getCurrentInstance().getExternalContext()
+				.getRequestParameterMap().get("paramErrorReadAllObject");
+		
+		shutDown();
+		
+		FacesContext context = FacesContext.getCurrentInstance();
+		context.addMessage(null, new FacesMessage(
+				FacesMessage.SEVERITY_ERROR, "Error in file:", 
+				errorMsg));
+	}
 	
     /** Getter and Setter methods.
      */
@@ -921,5 +1226,30 @@ public class LogParametersBean implements Serializable {
 
 	public void setDisableFileUpload(boolean disableFileUpload) {
 		this.disableFileUpload = disableFileUpload;
+	}
+	
+	public boolean getisFirstRun() {
+		return isFirstRun;
+	}
+
+	public void setFirstRun(boolean isFirstRun) {
+		this.isFirstRun = isFirstRun;
+	}
+	
+	public boolean isReplayerUrl() {
+		return isReplayerUrl;
+	}
+
+	public void setReplayerUrl(boolean isReplayerUrl) {
+		this.isReplayerUrl = isReplayerUrl;
+	}
+
+	public String getLabelTemplateProgressBar() {
+		return labelTemplateProgressBar;
+	}
+
+	public void setLabelTemplateProgressBar(String 
+			labelTemplateProgressBar) {
+		this.labelTemplateProgressBar = labelTemplateProgressBar;
 	}
 }

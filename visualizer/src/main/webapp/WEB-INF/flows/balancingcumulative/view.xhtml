@@ -14,10 +14,12 @@
 	 		 $(document).ready(
 				function() {
 					var appending = new Array("PRICE(&euro;)", "ENERGY(kWh)");
-					if (#{logParametersBean.isReplayerMode}) {
-						balancingDynData = dynDataGraph('balancingDynData',#{balancingMarketBeanReplayer.balancingDynData},'',getBaseDynYAxisData("Price (&euro;)","Imbalance (kWh)"), appending);
-					} else {
-						balancingDynData = dynDataGraph('balancingDynData',#{balancingMarketBean.balancingDynData},'',getBaseDynYAxisData("Price (&euro;)","Imbalance (kWh)"), appending);
+					if (#{!logParametersBean.isFirstRun}) {
+						if (#{logParametersBean.isReplayerMode}) {
+							balancingDynData = dynDataGraph('balancingDynData',#{balancingMarketBeanReplayer.balancingDynData},'',getBaseDynYAxisData("Price (&euro;)","Imbalance (kWh)"), appending);
+						} else {
+							balancingDynData = dynDataGraph('balancingDynData',#{balancingMarketBean.balancingDynData},'',getBaseDynYAxisData("Price (&euro;)","Imbalance (kWh)"), appending);
+						}
 					}
 				});
 	  	

@@ -16,10 +16,12 @@
 			$(document).ready(
 				function() {
 					var appending = new Array("PROFIT(&euro;)");
-					if (#{logParametersBean.isReplayerMode}) {
- 						financeDynData = dynDataGraph('financeDynData',#{financeBeanReplayer.financeDynData},'',getOneDynYAxisData('Profit(&euro;)'), appending);
-					} else {
-						financeDynData = dynDataGraph('financeDynData',#{financeBean.financeDynData},'',getOneDynYAxisData('Profit(&euro;)'), appending);
+					if (#{!logParametersBean.isFirstRun}) {
+						if (#{logParametersBean.isReplayerMode}) {
+ 							financeDynData = dynDataGraph('financeDynData',#{financeBeanReplayer.financeDynData},'',getOneDynYAxisData('Profit(&euro;)'), appending);
+						} else {
+							financeDynData = dynDataGraph('financeDynData',#{financeBean.financeDynData},'',getOneDynYAxisData('Profit(&euro;)'), appending);
+						}
 					}
 				}
 			);

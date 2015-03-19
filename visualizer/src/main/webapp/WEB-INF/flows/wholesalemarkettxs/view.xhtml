@@ -30,17 +30,17 @@
 			
 			$(document).ready(
 				function() {
-					if (#{logParametersBean.isReplayerMode}) {
-						marketTxScatter = scatterMarketTxs('marketTxScatter', '', 'Select the area to zoom-in', 'Price (&euro;/MWh)', 'Energy (MWh)', '&euro;/MWh', 'MWh', #{wholesaleMarketBeanReplayer.allMarketTransactionsData});
-					} else {
-						marketTxScatter = scatterMarketTxs('marketTxScatter', '', 'Select the area to zoom-in', 'Price (&euro;/MWh)', 'Energy (MWh)', '&euro;/MWh', 'MWh', #{wholesaleMarketBean.allMarketTransactionsData});
+					if (#{!logParametersBean.isFirstRun}) {
+					    if (#{logParametersBean.isReplayerMode}) {
+						    marketTxScatter = scatterMarketTxs('marketTxScatter', '', 'Select the area to zoom-in', 'Price (&euro;/MWh)', 'Energy (MWh)', '&euro;/MWh', 'MWh', #{wholesaleMarketBeanReplayer.allMarketTransactionsData});
+					    } else {
+						    marketTxScatter = scatterMarketTxs('marketTxScatter', '', 'Select the area to zoom-in', 'Price (&euro;/MWh)', 'Energy (MWh)', '&euro;/MWh', 'MWh', #{wholesaleMarketBean.allMarketTransactionsData});
+					    }
 					}
 				}		
 			);			
 			
 			function handleWholesaleMarketPushTsChoosen(data) {
-// 				console.log('marketAllTransactionsTsChoosen');
-// 				console.log(data);
 				
 				var array = jQuery.parseJSON(data);
 				var cnt = 0;

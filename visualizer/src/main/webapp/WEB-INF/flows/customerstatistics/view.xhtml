@@ -13,10 +13,12 @@
 			var customerStatistics;
 			$(document).ready(
 				function() {
-					if (#{logParametersBean.isReplayerMode}) {
-						customerStatistics = customerStatisticsPieChart(#{tariffMarketBeanReplayer.customerStatictics});
-					} else {
-						customerStatistics = customerStatisticsPieChart(#{tariffMarketBean.customerStatictics});	
+					if (#{!logParametersBean.isFirstRun}) {
+						if (#{logParametersBean.isReplayerMode}) {
+							customerStatistics = customerStatisticsPieChart(#{tariffMarketBeanReplayer.customerStatictics});
+						} else {
+							customerStatistics = customerStatisticsPieChart(#{tariffMarketBean.customerStatictics});	
+						}
 					}
 				});
 

@@ -55,17 +55,22 @@ public class GlobalPhasenListener implements PhaseListener {
 	 */
 	@Override
 	public void afterPhase(PhaseEvent phase) {
-
+	
 		if (phase.getPhaseId() == PhaseId.RENDER_RESPONSE) {
 
 			FacesContext ctx = phase.getFacesContext();
 			Map<String, String> headers = ctx.getExternalContext()
 					.getRequestHeaderMap();
-
+			
 			// No Ajax-Request. This means, a website was loaded new.
 			if (!(headers.get("Faces-Request") != null
 					&& headers.get("Faces-Request").equals("partial/ajax"))) {
-
+		
+				// webflow url not restart.
+				if (this.logParametersBean.isReplayerUrl()) {
+					restart = false;
+				}
+	
 	    		if (restart) {
 
 	    			restart = false;
@@ -98,7 +103,7 @@ public class GlobalPhasenListener implements PhaseListener {
 			// No Ajax-Request. This means, a website was loaded new.
 			if (!(headers.get("Faces-Request") != null && 
 					headers.get("Faces-Request").equals("partial/ajax"))) {
-			
+	
 				TimeslotRunnerGeneral timeslotRunner = null;
 				if (logParametersBean.getCurrentRunner() != null) {
 	    	    	timeslotRunner = logParametersBean.getCurrentRunner()
@@ -107,7 +112,7 @@ public class GlobalPhasenListener implements PhaseListener {
 
         		if (timeslotRunner != null && 
         				timeslotRunner.isRunning()) {
-        			
+ 			
         			restart = true;
         			
         			timeslotRunner.cancelTimer();
@@ -120,7 +125,7 @@ public class GlobalPhasenListener implements PhaseListener {
 			}
 		}
 	}
-
+	
 	@Override
 	public PhaseId getPhaseId() {
 		return PhaseId.ANY_PHASE;

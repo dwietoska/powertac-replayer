@@ -55,7 +55,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * Holds replaying data for current extended and normal mode 
- * (RunnerExtended and Runner). Uses array data structure 
+ * (RunnerExtended and RunnerNormal). Uses array data structure 
  * because of speed reasons.
  * 
  * @author DWietoska
@@ -1300,8 +1300,9 @@ public class LogDataImpl extends LogData implements
 		String line = null;
 		
 		try {
-
-			while ((line = logDataSource.readNextLineFromLog()) != null) {
+			while ((line = logDataSource.readNextLineFromLog()) != null && 
+					this.logParametersBean.getisReplayerRunning()) {
+				
 				domainObjectReader.readObject(line);
 			}
 		} catch (IOException e) {

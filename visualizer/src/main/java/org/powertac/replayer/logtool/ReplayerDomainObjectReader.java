@@ -113,7 +113,7 @@ public class ReplayerDomainObjectReader implements GameInitialization {
 	public void newGame() {
 		clearObjectListener();
 	}
-	
+
 	/**
 	 * Converts a line from the log to an object. Each line is of the form<br>
 	 * &nbsp;&nbsp;<code>ms:class::id::method{::arg}*</code>
@@ -134,13 +134,13 @@ public class ReplayerDomainObjectReader implements GameInitialization {
 	    ReplayerMessage replayerMessage = null;
 	    
 	    try {
-
+	    	
 	     replayerMessage = runnerStrategyFactory
 	    		.getReplayerMessage(tokens[0]);
 	    } catch (Exception e) {	
 	    	return null;
 	    }
-	
+
 	    // Ascertain Id.
 	    String methodName = tokens[2];
 	    Long id = null;
@@ -306,6 +306,80 @@ public class ReplayerDomainObjectReader implements GameInitialization {
 		}
 
 		return null;
+	}
+	
+	/**
+	 * Registers a NewObjectListener. The listener will be called with each
+	 * newly-created object of the given type. If type is null, then the
+	 * listener will be called for each new object.
+	 */
+	@Deprecated
+	public void registerNewObjectListener(NewObjectListener listener,
+			Class<?> type) {
+	
+		ArrayList<NewObjectListener> list = newObjectListeners.get(type);
+		
+		if (null == list) {
+			
+			list = new ArrayList<NewObjectListener>();
+			newObjectListeners.put(type, list);
+		}
+		
+		list.add(listener);
+	}
+	
+	/**
+	 * Removes a NewObjectListener.
+	 */
+	@Deprecated
+	public void removeObjectListener(Class<?> type) {
+
+		ArrayList<NewObjectListener> list = newObjectListeners.get(type);
+		
+		if (null == list) {
+			
+			return;
+		}
+		
+		list.clear();
+	}
+	
+	/**
+	 * Fires a new created object to the listener.
+	 * 
+	 * @param thing New Object
+	 */
+	@Deprecated
+	public void fireNewObjectEvent(Object thing) {
+
+		ArrayList<NewObjectListener> listeners = newObjectListeners.get(thing
+				.getClass());
+		
+		if (null == listeners) {
+			// try one up the tree to catch local subclasses like the default
+			// broker
+			listeners = newObjectListeners
+					.get(thing.getClass().getSuperclass());
+		}
+		
+		if (null != listeners) {
+			
+			for (NewObjectListener li : listeners) {
+				
+				li.handleNewObject(thing);
+			}
+		}
+		
+		// check for promiscuous listener
+		listeners = newObjectListeners.get(null);
+		
+		if (null != listeners) {
+			
+			for (NewObjectListener li : listeners) {
+				
+				li.handleNewObject(thing);
+			}
+		}
 	}
 
 	  /** Getter and Setter. */

@@ -15,10 +15,12 @@
 	 	 	$(document).ready(
 				function() {
 					var appending = new Array("PRICE(&euro;)", "ENERGY(kWh)", "CUST");
-					if (#{logParametersBean.isReplayerMode}) {
-						tariffDynData = dynDataGraph('tariffDynData',#{tariffMarketBeanReplayer.tariffDynData},'',getTariffDynYAxisData('Customer count', "Price (&euro;)","Traded energy (kWh)"), appending);
-					} else {
-						tariffDynData = dynDataGraph('tariffDynData',#{tariffMarketBean.tariffDynData},'',getTariffDynYAxisData('Customer count', "Price (&euro;)","Traded energy (kWh)"), appending);
+					if (#{!logParametersBean.isFirstRun}) {
+						if (#{logParametersBean.isReplayerMode}) {
+							tariffDynData = dynDataGraph('tariffDynData',#{tariffMarketBeanReplayer.tariffDynData},'',getTariffDynYAxisData('Customer count', "Price (&euro;)","Traded energy (kWh)"), appending);
+						} else {
+							tariffDynData = dynDataGraph('tariffDynData',#{tariffMarketBean.tariffDynData},'',getTariffDynYAxisData('Customer count', "Price (&euro;)","Traded energy (kWh)"), appending);
+						}
 					}
 				});
 	  

@@ -13,6 +13,17 @@ import org.powertac.replayer.utils.Helper;
 public abstract class RunnerGeneral implements Runner {
 
 	/**
+	 * This method read init data and starts the timeslot thread.
+	 * 
+	 * @param file The selected file
+	 * @param clockRate Clock rate
+	 * @throws ErrorReadDomainObject Error
+	 */
+	@Override
+	public abstract void runInit(File logFile, double clockRate) 
+			throws ErrorReadDomainObject;
+	
+	/**
 	 * Thread which sends messages in every timeslot.
 	 */
 	protected TimeslotRunnerGeneral logTimeslotRunner;

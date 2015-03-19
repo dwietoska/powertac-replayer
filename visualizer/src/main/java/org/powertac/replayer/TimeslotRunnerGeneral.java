@@ -45,7 +45,7 @@ public abstract class TimeslotRunnerGeneral {
 	/**
 	 * Specifies whether the time slot runner is cancelled
 	 */
-	protected boolean cancel;
+	protected volatile boolean cancel;
     
 	/**
 	 * The current clock rate.

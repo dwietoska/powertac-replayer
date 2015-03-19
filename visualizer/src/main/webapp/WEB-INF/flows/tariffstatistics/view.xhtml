@@ -13,7 +13,9 @@
 			var customerStatistics;
 			$(document).ready(
 				function() {
-					customerStatistics = customerStatisticsPieChart(#{tariffMarketBean.customerStatictics});
+					if (#{!logParametersBean.isFirstRun}) {
+						customerStatistics = customerStatisticsPieChart(#{tariffMarketBean.customerStatictics});
+					}
 				});
 		</script>
 	</ui:define>

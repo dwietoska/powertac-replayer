@@ -93,7 +93,10 @@
     <servlet-name>Push Servlet</servlet-name>
     <servlet-class>org.primefaces.push.PushServlet</servlet-class>
     <async-supported>true</async-supported>
-
+    <init-param>
+      <param-name>org.atmosphere.cpr.broadcasterCacheClass</param-name>
+      <param-value>org.atmosphere.cache.UUIDBroadcasterCache</param-value>
+    </init-param>
   </servlet>
   <servlet-mapping>
     <servlet-name>Push Servlet</servlet-name>

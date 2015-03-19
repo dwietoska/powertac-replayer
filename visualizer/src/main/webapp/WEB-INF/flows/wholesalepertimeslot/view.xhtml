@@ -27,10 +27,12 @@
 			$(document).ready(
 					function() {
 						var appending = new Array("PRICE(&euro;)", "ENERGY(MWh)");
-						if (#{logParametersBean.isReplayerMode}) {
+						if (#{!logParametersBean.isFirstRun}) {
+						    if (#{logParametersBean.isReplayerMode}) {
 								wholesaleDynDataOneTimeslot = dynDataGraph('wholesaleDynDataOneTimeslot',#{wholesaleMarketBeanReplayer.wholesaleDynDataOneTimeslot},'',getBaseDynYAxisData("Price (&euro;)","Traded energy (MWh)"), appending);				
-						} else {
+						    } else {
 								wholesaleDynDataOneTimeslot = dynDataGraph('wholesaleDynDataOneTimeslot',#{wholesaleMarketBean.wholesaleDynDataOneTimeslot},'',getBaseDynYAxisData("Price (&euro;)","Traded energy (MWh)"), appending);				
+						    }
 						}
 					}		
 				);

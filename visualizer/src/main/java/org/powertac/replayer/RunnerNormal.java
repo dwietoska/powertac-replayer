@@ -27,7 +27,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  * @author DWietoska
  */
 @Service("RunnerNormal")
-@Scope(value = "prototype")
+@Scope(value = "session") // prototype
 public class RunnerNormal extends RunnerGeneral implements DisposableBean {
 
 	/**
@@ -268,7 +268,7 @@ public class RunnerNormal extends RunnerGeneral implements DisposableBean {
 			clock = SimulationClockControlReplayer
 					.getInstance(logDao.getStartNumberTimeslot());
 
-			if (isReloadPage && tickInterval <= 5000) {
+			if (isReloadPage && tickInterval <= 6000) {
 
 				clock.setTickInterval(WAIT_FIRST_TICK_RELOAD_PAGE);
 
@@ -352,5 +352,10 @@ public class RunnerNormal extends RunnerGeneral implements DisposableBean {
 	@Override
 	public void destroy() throws Exception {
 		closeFile();
+	}
+
+	@Override
+	public void runInit(File logFile, double clockRate)
+			throws ErrorReadDomainObject {
 	}
 }

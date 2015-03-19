@@ -13,10 +13,12 @@
 			var wholesaleAverageTimeslotPriceData;
 			$(document).ready(
 				function() {
-					if (#{logParametersBean.isReplayerMode}) {
-						wholesaleAverageTimeslotPriceData = wholesaleClearingEnergy('wholesaleAverageTimeslotPriceData',#{wholesaleMarketBeanReplayer.wholesaleAverageTimeslotPriceData},'',getBaseDynYAxisData("Average clearing price (&euro;)","Traded energy (MWh)"));
-					} else {
-						wholesaleAverageTimeslotPriceData = wholesaleClearingEnergy('wholesaleAverageTimeslotPriceData',#{wholesaleMarketBean.wholesaleAverageTimeslotPriceData},'',getBaseDynYAxisData("Average clearing price (&euro;)","Traded energy (MWh)"));
+					if (#{!logParametersBean.isFirstRun}) {
+					    if (#{logParametersBean.isReplayerMode}) {
+						    wholesaleAverageTimeslotPriceData = wholesaleClearingEnergy('wholesaleAverageTimeslotPriceData',#{wholesaleMarketBeanReplayer.wholesaleAverageTimeslotPriceData},'',getBaseDynYAxisData("Average clearing price (&euro;)","Traded energy (MWh)"));
+					    } else {
+						    wholesaleAverageTimeslotPriceData = wholesaleClearingEnergy('wholesaleAverageTimeslotPriceData',#{wholesaleMarketBean.wholesaleAverageTimeslotPriceData},'',getBaseDynYAxisData("Average clearing price (&euro;)","Traded energy (MWh)"));
+					    }
 					}
 				});
 			  	

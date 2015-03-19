@@ -16,10 +16,12 @@
 	
 	 		 $(document).ready(
 				function() {
-					if (#{logParametersBean.isReplayerMode}) {
-						weatherReport = weatherReportGraph('weatherReport','',#{weatherBeanReplayer.temperatureData},#{weatherBeanReplayer.windSpeedData},#{weatherBeanReplayer.windDirectionData},#{weatherBeanReplayer.cloudCoverData})
-					} else {
-						weatherReport = weatherReportGraph('weatherReport','',#{weatherBean.temperatureData},#{weatherBean.windSpeedData},#{weatherBean.windDirectionData},#{weatherBean.cloudCoverData})
+					if (#{!logParametersBean.isFirstRun}) {
+					    if (#{logParametersBean.isReplayerMode}) {
+						    weatherReport = weatherReportGraph('weatherReport','',#{weatherBeanReplayer.temperatureData},#{weatherBeanReplayer.windSpeedData},#{weatherBeanReplayer.windDirectionData},#{weatherBeanReplayer.cloudCoverData})
+					    } else {
+						    weatherReport = weatherReportGraph('weatherReport','',#{weatherBean.temperatureData},#{weatherBean.windSpeedData},#{weatherBean.windDirectionData},#{weatherBean.cloudCoverData})
+					    }
 					}
 				});
 	  		  

@@ -20,4 +20,6 @@ public interface Runner {
 	public void pauseReplayer();
 	public void continueReplayer(double clockRate, int currentTimeslot);
 	public TimeslotRunnerGeneral getLogTimeslotRunner();
+	public void runInit(File file, double clockRate) 
+	       throws ErrorReadDomainObject;
 }

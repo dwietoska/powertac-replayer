@@ -13,10 +13,12 @@
 			var transactionsSummary;
 			$(document).ready(
 				function() {
-					if (#{logParametersBean.isReplayerMode}) {
-						transactionsSummary = transactionsSummary(#{gameOverviewBeanReplayer.gameOverview});
-					} else {
-						transactionsSummary = transactionsSummary(#{gameOverviewBean.gameOverview});
+					if (#{!logParametersBean.isFirstRun}) {
+						if (#{logParametersBean.isReplayerMode}) {
+							transactionsSummary = transactionsSummary(#{gameOverviewBeanReplayer.gameOverview});
+						} else {
+							transactionsSummary = transactionsSummary(#{gameOverviewBean.gameOverview});
+						}
 					}
 				});
 			  	

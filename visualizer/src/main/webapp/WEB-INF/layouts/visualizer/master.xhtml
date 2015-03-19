@@ -158,20 +158,36 @@
 		}
 		
 		function handleUpdateProgressBarSlider(data) {
-			pbSlider.setValue(data);
+
+			if (data % 5 == 0 || data == 1) {
+				pbSlider.setValue(data);
+			}
+			
+			if (data == 100) {
+				changeProgressBarTemplate();
+			}
 		}
 		
-		function completeFileUpload() {		
+		function completeFileUpload() {				
 			refreshFileUpload();
 			startReplaying();
 		}
 		
-		function startFileUpload() {		
+		function startFileUpload() {	
 			beforeReplaying();
 		}
 
 		function handleDataComplete() {
 			updateView();
+		}
+		
+		function completeRunInit() {		
+			readAllDataAsync();
+// 			setTimeout(window.location.reload.bind(window.location), 5);
+		}
+		
+		function handleErrorReadAllObjects(data) {
+			errorReadFile([{name:'paramErrorReadAllObject', value:data}]);
 		}
 	</script>
  
@@ -182,7 +198,6 @@
 	<h:form id="growlMessage">
 		<p:growl id="growl" showDetail="true" autoUpdate="true" /> 
 	</h:form>
-<!-- 	sticky="true"  -->
 	<p:button rendered="false"></p:button>
 	<div class="page" id="page-index">
 		 <div class="nav-bar">
@@ -271,29 +286,31 @@
 			<div class="page-region-content">
 
     		    <h:form id="formLog2" prependId="false" >
-
-					<div class="grid">
-						<div class="row">
-							<div class="span12 padding10 fg-color-darken text-center">
-							  <ui:insert name="title" />
-							  <ui:insert name="maincontent" />
+					<ui:fragment rendered="#{!logParametersBean.isFirstRun}">
+						<div class="grid">
+							<div class="row">
+								<div class="span12 padding10 fg-color-darken text-center">
+									<ui:insert name="title" />
+									<ui:insert name="maincontent" />
+								</div>
 							</div>
-						</div> 
-				   </div> 
-
-					<div class="grid">
-						<div class="row">
-							<ui:insert name="rowcontent" />
 						</div>
-					</div> 
-			
-			    </h:form>
+
+						<div class="grid">
+							<div class="row">
+								<ui:insert name="rowcontent" />
+							</div>
+						</div>
+					</ui:fragment>
+				</h:form>
 
 				<!-- Never update this -->
 				<ui:insert name="replayercontent" />
 				    
-			    <h:form enctype="multipart/form-data" id="formLog" prependId="false" >
 
+				  
+			    <h:form enctype="multipart/form-data" id="formLog" prependId="false" >
+				
 					<div class="row" style="padding: 8px;">
 						<div style="width: 100%;">
 							<p:ajaxStatus
@@ -312,15 +329,16 @@
 						<div style="clear: both"></div>
 					</div>
 
+					<p:messages id="messagesPrimefaces" showSummary="true" 
+								showDetail="true" globalOnly="true" 
+								closable="true" />
+
 					<p:remoteCommand name="refreshFileUpload"
-						update="formLog:panelGroupTopReplayerContent, formLog:panelGroupExtendedModeReplayerContent, formLog:buttons"
+						update="formLog:messagesPrimefaces, formLog:panelGroupTopReplayerContent, formLog:panelGroupExtendedModeReplayerContent, formLog:buttons"
 						actionListener="#{logParametersBean.messageFileUpload}" />
 
-					<p:remoteCommand name="startReplaying" update=":formLog2, formLog:panelGroupTopReplayerContent, formLog:panelGroupExtendedModeReplayerContent, formLog:buttons" 
-						actionListener="#{logParametersBean.run}" />
-
 					<p:remoteCommand name="beforeReplaying"
-						update="formLog:panelGroupTopReplayerContent, formLog:panelGroupExtendedModeReplayerContent, formLog:buttons"
+						update="formLog:messagesPrimefaces, formLog:panelGroupTopReplayerContent, formLog:panelGroupExtendedModeReplayerContent, formLog:buttons"
 						actionListener="#{logParametersBean.actionBeforeReplaying}" />
 						
 					<p:remoteCommand name="slideStartServerCall"
@@ -328,7 +346,23 @@
 						actionListener="#{logParametersBean.onSlideStart}" />
 
 					<p:remoteCommand name="updateView"
-						update=":formLog2, formLog:panelGroupTopReplayerContent, formLog:panelGroupExtendedModeReplayerContent, formLog:buttons" />
+						update="formLog:messagesPrimefaces, :formLog2, formLog:panelGroupTopReplayerContent, formLog:panelGroupExtendedModeReplayerContent, formLog:buttons" />
+						
+					<p:remoteCommand name="startReplaying"
+						update="formLog:messagesPrimefaces, :formLog2, formLog:panelGroupTopReplayerContent, formLog:panelGroupExtendedModeReplayerContent, formLog:buttons"
+						actionListener="#{logParametersBean.runInit}" 
+						oncomplete="completeRunInit()"/>
+
+					<p:remoteCommand name="readAllDataAsync"
+						actionListener="#{logParametersBean.run}"/>
+
+					<p:remoteCommand name="errorReadFile"
+						update="formLog:messagesPrimefaces, formLog:panelGroupTopReplayerContent, formLog:panelGroupExtendedModeReplayerContent, formLog:buttons"
+						action="#{logParametersBean.errorReadFile}"/>
+						
+					<p:remoteCommand name="changeProgressBarTemplate"
+									 actionListener="#{logParametersBean.setLabelTemplateProgressBar('')}" 
+									 update="formLog:tsProgressBar" /> 
 						
 					<p:panel id="basic" header="Replaying" style="margin-bottom:20px;"
 							 rendered="#{logParametersBean.isReplayerMode}">
@@ -337,7 +371,7 @@
 					    		  onMessage="handleUpdateProgressBarSlider"
 								  channel="/updateProgressBar#{session.id}" 
 								  rendered="#{logParametersBean.isReplayerMode}" />
-								  
+
 						<div style="width: 100%;">
 							<p:fileUpload id="fileUploadFile" widgetVar="fileUploadWidgetVar" mode="advanced"
 								fileUploadListener="#{logParametersBean.handleFileUpload}"
@@ -345,6 +379,7 @@
 								oncomplete="completeFileUpload()" onstart="startFileUpload()" 
 								allowTypes="/(\.|\/)(state|gz)$/">
 							</p:fileUpload>
+<!-- 							disabled="#{logParametersBean.disableFileUpload}" -->
 						</div>
 						<div style="clear: both"></div>
 							
@@ -353,13 +388,7 @@
 							<div class="row" style="padding: 8px;">
 								<h:panelGroup layout="block" id="panelGroupTopReplayerContent">
 									<div style="width: 30%; float: left;">
-										<p:selectOneButton id="mode" value="#{logParametersBean.mode}"
-											valueChangeListener="#{logParametersBean.valueChangeChooseMode}"
-											disabled="#{logParametersBean.disableSelectOneButton}">
-											<f:selectItem itemLabel="Normal" itemValue="normal" />
-											<f:selectItem itemLabel="Extended" itemValue="extended" />
-											<p:ajax event="change" update="formLog:panelGroupExtendedModeReplayerContent, formLog:socketProgressBar" />
-										</p:selectOneButton>
+										<p:outputLabel value="" />
 									</div>
 									<div style="width: 40%; float: left; text-align: center; padding: 0.4em 1em;">
 										<p:outputLabel id="outputMode"
@@ -401,6 +430,7 @@
 														maxValue="#{logParametersBean.timeslotMaxValue}"
 														rendered="#{logParametersBean.isAllDataLoad}"
 														onSlideStart="sliderStart();">
+<!-- 														rendered="#{logParametersBean.isAllDataLoad}" -->
 														<p:ajax event="slideEnd"
 															listener="#{logParametersBean.onSlideEnd}" />
 													</p:slider>
@@ -408,8 +438,10 @@
 												<div style="position: absolute; width: 100%; top: 0; margin: -3px 0px 0px 0px">
 													<p:progressBar id="tsProgressBar" widgetVar="pbSlider"
 														 value="#{logParametersBean.progress}"
-														labelTemplate="{value}%" 
+														labelTemplate="#{logParametersBean.labelTemplateProgressBar}" 
 														displayOnly="false">
+<!-- 														<p:ajax event="complete" -->
+<!-- 															oncomplete="progressBarComplete();" /> -->
 													</p:progressBar>
 												</div>
 											</div>
@@ -425,16 +457,17 @@
 										update="formLog:buttons" style="margin-left: 10px;"></p:commandButton>
 									<p:commandButton
 										actionListener="#{logParametersBean.continueReplayer}"
-										value="Replay"
+										value="Play"
 										disabled="#{!logParametersBean.isAllDataLoad}"
 										rendered="#{!logParametersBean.isShowBreakButton}"
 										update="formLog:buttons" style="margin-left: 10px;"></p:commandButton>
 									<p:commandButton 
 										actionListener="#{logParametersBean.shutDown}"
-										value="Stop"
+										value="Cancel"
 										rendered="#{logParametersBean.isAllDataLoad}"
 										update="formLog:panelGroupTopReplayerContent, formLog:panelGroupExtendedModeReplayerContent, formLog:buttons"
 										style="margin-left: 10px;"></p:commandButton>
+<!-- 										oncomplete="onCompleteStopButton()" -->
 								</h:panelGroup>
 								<div style="clear: both"></div>
 							</div>
@@ -697,12 +730,17 @@
 	<p:socket channel="/sliderExtendedChangeTimeslot#{session.id}" 
 			rendered="#{logParametersBean.isReplayerMode}" >
 		 <p:ajax update="formLog:output, formLog:tsSlider, formLog:inputHiddenForSlider"/>
+<!-- 		 <p:ajax update="formLog:panelGroupExtendedModeReplayerContent" process="@this" async="true"/> -->
 	</p:socket>
   	<p:socket onMessage="handleInfoMsg" channel="/infopush" rendered="#{!logParametersBean.isReplayerMode}" />
 	<p:socket onMessage="handleGlobalMsg" channel="/globalpush" rendered="#{!logParametersBean.isReplayerMode}" />
 	<p:socket onMessage="handleGlobalMsg" channel="/globalpushExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
 	<p:socket onMessage="handleChat" channel="/chat" rendered="#{!logParametersBean.isReplayerMode}" />
 	<p:socket onMessage="handleDataComplete" channel="/dataComplete#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+
+	<p:socket onMessage="handleErrorReadAllObjects" channel="/errorReadAllObjects#{session.id}" />
+
+<!-- 	<p:socket onMessage="handleUpdateProgressBarSlider" channel="/updateProgressBar#{session.id}" rendered="#{logParametersBean.isReplayerMode and logParametersBean.isExtendedMode}"  /> -->
 
 
 	<script type="text/javascript">

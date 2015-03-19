@@ -15,10 +15,12 @@
 			$(document).ready(
 				function() {
 					var appending = new Array();
-					if (#{logParametersBean.isReplayerMode}) {
-						customerModels = customerModelsChart('customerModels',#{customerModelBeanReplayer.wholesaleDynDataOneTimeslot},'',getBaseDynYAxisData("Price (&euro;)","Traded energy (MWh)"), appending);
-					} else {
-						customerModels = customerModelsChart('customerModels',#{customerInfoService.wholesaleDynDataOneTimeslot},'',getBaseDynYAxisData("Price (&euro;)","Traded energy (MWh)"), appending);	
+					if (#{!logParametersBean.isFirstRun}) {
+						if (#{logParametersBean.isReplayerMode}) {
+							customerModels = customerModelsChart('customerModels',#{customerModelBeanReplayer.wholesaleDynDataOneTimeslot},'',getBaseDynYAxisData("Price (&euro;)","Traded energy (MWh)"), appending);
+						} else {
+							customerModels = customerModelsChart('customerModels',#{customerInfoService.wholesaleDynDataOneTimeslot},'',getBaseDynYAxisData("Price (&euro;)","Traded energy (MWh)"), appending);	
+						}
 					}
 			});
 			

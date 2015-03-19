@@ -23,10 +23,12 @@
 			$(document).ready(
 				function() {
 					var appending = new Array("PROFIT(&euro;)");
-					if (#{logParametersBean.isReplayerMode}) {
- 						financeDynData = dynDataGraph('financeDynData',#{financeBeanReplayer.financeDynData},'',getOneDynYAxisData('Profit(&euro;)'), appending);
-					} else {
-						financeDynData = dynDataGraph('financeDynData',#{financeBean.financeDynData},'',getOneDynYAxisData('Profit(&euro;)'), appending);
+					if (#{!logParametersBean.isFirstRun}) {
+						if (#{logParametersBean.isReplayerMode}) {
+ 							financeDynData = dynDataGraph('financeDynData',#{financeBeanReplayer.financeDynData},'',getOneDynYAxisData('Profit(&euro;)'), appending);
+						} else {
+							financeDynData = dynDataGraph('financeDynData',#{financeBean.financeDynData},'',getOneDynYAxisData('Profit(&euro;)'), appending);
+						}
 					}
 				}
 			);
@@ -136,7 +138,13 @@
 				financeDynData.redraw();
 				financeDynData.rangeSelector.clickButton(selectedRange, selectedRange, true); 
 			}
+			
+			function onCompleteCreateLogFile() {
+				console.log('onCompleteCreateLogFile');				
+				completeFileUpload();
+			}
 		</script>
+		
 	</ui:define>
 
 	<ui:define name="maincontent">
@@ -155,8 +163,8 @@
 	
 	<ui:define name="replayercontent">
 		<h:form id="formLogReplayerContent">
-			<p:remoteCommand name="processGivenFile" autoRun="true" update=":formLog2, :formLog:panelGroupTopReplayerContent, :formLog:panelGroupExtendedModeReplayerContent, :formLog:buttons"
-				actionListener="#{logParametersBean.createLogFile()}" />
+			<p:remoteCommand name="processGivenFile" autoRun="true" update=":formLog:messagesPrimefaces, :formLog2, :formLog:panelGroupTopReplayerContent, :formLog:panelGroupExtendedModeReplayerContent, :formLog:buttons"
+				actionListener="#{logParametersBean.createLogFile()}" oncomplete="onCompleteCreateLogFile()" />
 		</h:form>
 	</ui:define>
 

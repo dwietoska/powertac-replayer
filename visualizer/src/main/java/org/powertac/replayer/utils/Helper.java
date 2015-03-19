@@ -8,9 +8,9 @@ package org.powertac.replayer.utils;
 public class Helper {
 	
 	/**
-	 * Default clock rate.
+	 * Default clock rate in seconds.
 	 */
-	public static final double DEFAULT_TS_CLOCK_RATE = 5;
+	public static final double DEFAULT_TS_CLOCK_RATE = 2;
 	
 	/**
 	 * Millis.
@@ -21,4 +21,9 @@ public class Helper {
 	 * Path for log files.
 	 */
 	public final static String PATH_LOG_FILES = "log/";
+	
+	/**
+	 * Path for log files (webflow replayer).
+	 */
+	public final static String PATH_WEBFLOW_LOG_FILES = "data/";
 }
