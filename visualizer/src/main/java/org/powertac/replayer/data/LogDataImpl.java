@@ -316,6 +316,21 @@ public class LogDataImpl extends LogData implements
 	private int numberOfIndexedTimeSlots;
 	
 	/**
+	 * Used for progressBar in TimeService.class.
+	 */
+	private long time2;
+	
+	/**
+	 * Used for progressBar in TimeService.class.
+	 */
+	private long time1;
+	
+	/**
+	 * Used for progressBar in TimeService.class.
+	 */
+	private long diffTime;
+	
+	/**
 	 * Reset for new replaying.
 	 */
 	@Override
@@ -336,6 +351,9 @@ public class LogDataImpl extends LogData implements
 		this.appearanceListBean.resetAvailableList();;
 		this.numberOfIndexedTimeSlots = 0;
 		this.counterTimeServicesMsg = 0;
+		this.time2 = 0;
+		this.time1 = 0;
+		this.diffTime = 0;
 	}
 	
 	/**
@@ -861,8 +879,19 @@ public class LogDataImpl extends LogData implements
 							
 							logParametersBean.setProgress(newProgessValue);
 							logParametersBean.setLastLoadedTimeslotNumber(numberOfTimeslots);
-							pushServiceReplayerNew.push("/updateProgressBar", 
-									String.valueOf(newProgessValue));
+							
+							// Alle 2 Sekunden senden
+							time1 = new java.util.Date().getTime();
+							diffTime = time1 - time2;
+
+							if ((newProgessValue == 1 || diffTime >= 1000)
+											&& newProgessValue <= 100) {
+								
+							      pushServiceReplayerNew
+												.push("/updateProgressBar",
+														String.valueOf(newProgessValue));
+								  time2 = new java.util.Date().getTime();
+							}
 						}
 						
 						// Update attributes data

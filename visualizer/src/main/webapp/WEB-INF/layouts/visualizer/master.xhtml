@@ -163,9 +163,7 @@
 		
 		function handleUpdateProgressBarSlider(data) {
 
-			if (data % 5 == 0 || data == 1) {
-				pbSlider.setValue(data);
-			}
+			pbSlider.setValue(data);
 			
 			if (data == 100) {
 				changeProgressBarTemplate();
