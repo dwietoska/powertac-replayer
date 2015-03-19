@@ -1,0 +1,1 @@
+Uploaded files from FileUpload. They are deleted when the session was destroyed.
