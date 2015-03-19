@@ -15,7 +15,7 @@ public abstract class TimeslotRunnerGeneral {
 	 * Specifies the time, in milliseconds, when the next message will 
 	 * send (After reloading a page).
 	 */
-	protected static final long WAIT_FIRST_TICK_RELOAD_PAGE = 6000;
+	protected static final long WAIT_FIRST_TICK_RELOAD_PAGE = 4000;
 	
 	/**
 	 * Simulation Clock.

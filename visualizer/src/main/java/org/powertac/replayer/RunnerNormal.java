@@ -268,7 +268,7 @@ public class RunnerNormal extends RunnerGeneral implements DisposableBean {
 			clock = SimulationClockControlReplayer
 					.getInstance(logDao.getStartNumberTimeslot());
 
-			if (isReloadPage && tickInterval <= 6000) {
+			if (isReloadPage && tickInterval <= 4000) {
 
 				clock.setTickInterval(WAIT_FIRST_TICK_RELOAD_PAGE);
 
