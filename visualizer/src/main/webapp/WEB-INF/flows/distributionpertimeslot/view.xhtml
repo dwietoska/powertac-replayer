@@ -396,8 +396,10 @@
      <ui:define name="handlePush">
 		<p:socket onMessage="handleDistributionPushTsChoosen" channel="/distributionTsChoosen" rendered="#{logParametersBean.isReplayerMode}" />
 		<p:socket onMessage="handleDistributionPushTsChoosenBackward" channel="/tsChoosenBackward" rendered="#{logParametersBean.isReplayerMode}" />
-		<p:socket onMessage="handleDistributionPushTsChoosen" channel="/distributionpertimeslotExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
-		<p:socket onMessage="handleDistributionPushTsChoosenBackward" channel="/distributionpertimeslotBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleDistributionPushTsChoosen" channel="/distributionpertimeslotExtendedChangeTimeslot" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleDistributionPushTsChoosenBackward" channel="/distributionpertimeslotBackwardExtendedChangeTimeslot" rendered="#{logParametersBean.isReplayerMode}" />
+<!-- 	<p:socket onMessage="handleDistributionPushTsChoosen" channel="/distributionpertimeslotExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" /> -->
+<!-- 	<p:socket onMessage="handleDistributionPushTsChoosenBackward" channel="/distributionpertimeslotBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" /> -->
 	</ui:define>
 
 </ui:composition>

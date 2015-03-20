@@ -279,8 +279,8 @@
 				<f:setPropertyActionListener
 					target="#{logParametersBean.choosenViewName}"
 					value="#{request.requestURI}" />
-				<f:setPropertyActionListener target="#{logParametersBean.sessionId}"
-					value="#{session.id}" />
+<!-- 				<f:setPropertyActionListener target="#{logParametersBean.sessionId}" -->
+<!-- 					value="#{session.id}" /> -->
 			</p:remoteCommand>
 		</h:form>
 
@@ -369,10 +369,14 @@
 					<p:panel id="basic" header="Replaying" style="margin-bottom:20px;"
 							 rendered="#{logParametersBean.isReplayerMode}">
 						
-					    <p:socket id="socketProgressBar"
+						<p:socket id="socketProgressBar"
 					    		  onMessage="handleUpdateProgressBarSlider"
-								  channel="/updateProgressBar#{session.id}" 
+								  channel="/updateProgressBar" 
 								  rendered="#{logParametersBean.isReplayerMode}" />
+<!-- 					    <p:socket id="socketProgressBar" -->
+<!-- 					    		  onMessage="handleUpdateProgressBarSlider" -->
+<!-- 								  channel="/updateProgressBar#{session.id}"  -->
+<!-- 								  rendered="#{logParametersBean.isReplayerMode}" /> -->
 
 						<div style="width: 100%;">
 							<p:fileUpload id="fileUploadFile" widgetVar="fileUploadWidgetVar" mode="advanced"
@@ -729,21 +733,27 @@
 	<p:socket channel="/tspush" rendered="#{logParametersBean.isReplayerMode}" >
 		 <p:ajax update="formLog:output, formLog:tsSlider, formLog:inputHiddenForSlider"/>
 	</p:socket>
-	<p:socket channel="/sliderExtendedChangeTimeslot#{session.id}" 
+
+	<p:socket channel="/sliderExtendedChangeTimeslot" 
 			rendered="#{logParametersBean.isReplayerMode}" >
 		 <p:ajax update="formLog:output, formLog:tsSlider, formLog:inputHiddenForSlider"/>
-<!-- 		 <p:ajax update="formLog:panelGroupExtendedModeReplayerContent" process="@this" async="true"/> -->
 	</p:socket>
+<!-- 	<p:socket channel="/sliderExtendedChangeTimeslot#{session.id}"  -->
+<!-- 			rendered="#{logParametersBean.isReplayerMode}" > -->
+<!-- 		 <p:ajax update="formLog:output, formLog:tsSlider, formLog:inputHiddenForSlider"/> -->
+<!-- 	</p:socket> -->
   	<p:socket onMessage="handleInfoMsg" channel="/infopush" rendered="#{!logParametersBean.isReplayerMode}" />
 	<p:socket onMessage="handleGlobalMsg" channel="/globalpush" rendered="#{!logParametersBean.isReplayerMode}" />
-	<p:socket onMessage="handleGlobalMsg" channel="/globalpushExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+	<p:socket onMessage="handleGlobalMsg" channel="/globalpushExtendedChangeTimeslot" rendered="#{logParametersBean.isReplayerMode}" />
+<!-- <p:socket onMessage="handleGlobalMsg" channel="/globalpushExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" /> -->
 	<p:socket onMessage="handleChat" channel="/chat" rendered="#{!logParametersBean.isReplayerMode}" />
-	<p:socket onMessage="handleDataComplete" channel="/dataComplete#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+    <p:socket onMessage="handleDataComplete" channel="/dataComplete" rendered="#{logParametersBean.isReplayerMode}" />
+<!-- <p:socket onMessage="handleDataComplete" channel="/dataComplete#{session.id}" rendered="#{logParametersBean.isReplayerMode}" /> -->
 
-	<p:socket onMessage="handleErrorReadAllObjects" channel="/errorReadAllObjects#{session.id}" />
+	<p:socket onMessage="handleErrorReadAllObjects" channel="/errorReadAllObjects" />
+<!-- <p:socket onMessage="handleErrorReadAllObjects" channel="/errorReadAllObjects#{session.id}" /> -->
 
-<!-- 	<p:socket onMessage="handleUpdateProgressBarSlider" channel="/updateProgressBar#{session.id}" rendered="#{logParametersBean.isReplayerMode and logParametersBean.isExtendedMode}"  /> -->
-
+<!-- <p:socket onMessage="handleUpdateProgressBarSlider" channel="/updateProgressBar#{session.id}" rendered="#{logParametersBean.isReplayerMode and logParametersBean.isExtendedMode}"  /> -->
 
 	<script type="text/javascript">
 		function handleChat(data) {

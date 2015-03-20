@@ -340,8 +340,10 @@
      <ui:define name="handlePush">
 		<p:socket onMessage="handleTariffTransactionPushTsChoosen" channel="/tariffTransactionTsChoosen" rendered="#{logParametersBean.isReplayerMode}" />
 		<p:socket onMessage="handlePushTsChoosenBackward" channel="/tsChoosenBackward" rendered="#{logParametersBean.isReplayerMode}" />
-	    <p:socket onMessage="handleTariffTransactionPushTsChoosen" channel="/tariffpertimeslotExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
-	    <p:socket onMessage="handlePushTsChoosenBackward" channel="/tariffpertimeslotBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+	    <p:socket onMessage="handleTariffTransactionPushTsChoosen" channel="/tariffpertimeslotExtendedChangeTimeslot" rendered="#{logParametersBean.isReplayerMode}" />
+	    <p:socket onMessage="handlePushTsChoosenBackward" channel="/tariffpertimeslotBackwardExtendedChangeTimeslot" rendered="#{logParametersBean.isReplayerMode}" />
+<!-- 	<p:socket onMessage="handleTariffTransactionPushTsChoosen" channel="/tariffpertimeslotExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" /> -->
+<!-- 	<p:socket onMessage="handlePushTsChoosenBackward" channel="/tariffpertimeslotBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" /> -->
 	</ui:define>
 
 </ui:composition>

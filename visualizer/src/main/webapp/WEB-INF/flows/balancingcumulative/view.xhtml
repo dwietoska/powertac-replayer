@@ -326,8 +326,10 @@
      <ui:define name="handlePush">
 		<p:socket onMessage="handleBalancingPushTsChoosen" channel="/balancingTsChoosen" rendered="#{logParametersBean.isReplayerMode}" />
 		<p:socket onMessage="handleBalancingPushTsChoosenBackward" channel="/tsChoosenBackward" rendered="#{logParametersBean.isReplayerMode}" />
-		<p:socket onMessage="handleBalancingPushTsChoosen" channel="/balancingcumulativeExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
-		<p:socket onMessage="handleBalancingPushTsChoosenBackward" channel="/balancingcumulativeBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+<!-- 		<p:socket onMessage="handleBalancingPushTsChoosen" channel="/balancingcumulativeExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" /> -->
+<!-- 		<p:socket onMessage="handleBalancingPushTsChoosenBackward" channel="/balancingcumulativeBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" /> -->
+		<p:socket onMessage="handleBalancingPushTsChoosen" channel="/balancingcumulativeExtendedChangeTimeslot" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleBalancingPushTsChoosenBackward" channel="/balancingcumulativeBackwardExtendedChangeTimeslot" rendered="#{logParametersBean.isReplayerMode}" />
 	</ui:define>
 
 </ui:composition>

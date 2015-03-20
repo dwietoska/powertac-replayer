@@ -176,8 +176,10 @@
 		<p:socket onMessage="handleWeatherPush" channel="/weather" rendered="#{!logParametersBean.isReplayerMode}" />
 		<p:socket onMessage="handleWeatherPushTsChoosen" channel="/weatherTsChoosen" rendered="#{logParametersBean.isReplayerMode}" />
 		<p:socket onMessage="handleWeatherReportTsChoosenBackward" channel="/tsChoosenBackward" rendered="#{logParametersBean.isReplayerMode}" />
-		<p:socket onMessage="handleWeatherPushTsChoosen" channel="/weatherreportExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
-		<p:socket onMessage="handleWeatherReportTsChoosenBackward" channel="/weatherreportBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleWeatherPushTsChoosen" channel="/weatherreportExtendedChangeTimeslot" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleWeatherReportTsChoosenBackward" channel="/weatherreportBackwardExtendedChangeTimeslot" rendered="#{logParametersBean.isReplayerMode}" />
+<!-- 	<p:socket onMessage="handleWeatherPushTsChoosen" channel="/weatherreportExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" /> -->
+<!-- 	<p:socket onMessage="handleWeatherReportTsChoosenBackward" channel="/weatherreportBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" /> -->
 	</ui:define>
 
 </ui:composition>

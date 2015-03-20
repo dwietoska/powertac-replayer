@@ -41,8 +41,8 @@
 		<div id="transactionsSummary"
 			style="min-width: 400px; height: 620px; margin: 0 auto" />
 		<p:socket onMessage="handleGameOverview" channel="/gameoverview" rendered="#{!logParametersBean.isReplayerMode}" />
-		<p:socket onMessage="handleGameOverview" channel="/transactionssummaryExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
-		
+		<p:socket onMessage="handleGameOverview" channel="/transactionssummaryExtendedChangeTimeslot" rendered="#{logParametersBean.isReplayerMode}" />
+<!-- 		<p:socket onMessage="handleGameOverview" channel="/transactionssummaryExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" /> -->
 	</ui:define>
 
 	<ui:define name="rowcontent"></ui:define>

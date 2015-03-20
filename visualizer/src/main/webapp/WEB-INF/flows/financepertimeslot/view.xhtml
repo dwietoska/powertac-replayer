@@ -306,8 +306,10 @@
      <ui:define name="handlePush">
 		<p:socket onMessage="handleFinancePushTsChoosen" channel="/financeTsChoosen" rendered="#{logParametersBean.isReplayerMode}" />
 		<p:socket onMessage="handlePushTsChoosenBackward" channel="/tsChoosenBackward" rendered="#{logParametersBean.isReplayerMode}" />
-		<p:socket onMessage="handleFinancePushTsChoosen" channel="/financepertimeslotExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
-		<p:socket onMessage="handlePushTsChoosenBackward" channel="/financepertimeslotBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleFinancePushTsChoosen" channel="/financepertimeslotExtendedChangeTimeslot" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handlePushTsChoosenBackward" channel="/financepertimeslotBackwardExtendedChangeTimeslot" rendered="#{logParametersBean.isReplayerMode}" />
+<!-- 	<p:socket onMessage="handleFinancePushTsChoosen" channel="/financepertimeslotExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" /> -->
+<!-- 	<p:socket onMessage="handlePushTsChoosenBackward" channel="/financepertimeslotBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" /> -->
 	</ui:define>
 
 </ui:composition>

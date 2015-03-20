@@ -18,7 +18,7 @@ import org.springframework.test.util.ReflectionTestUtils;
  * @author DWietoska
  */
 @Service("org.powertac.common.CustomerInfo")
-@Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
+//@Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class CustomerInfoReplayerMessageImpl implements ReplayerMessage, 
 		GameInitialization {
 	

@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @Service("org.powertac.common.MarketPosition")
-@Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
+//@Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class MarketPositionReplayerMessageImpl implements ReplayerMessage, 
 		GameInitialization {
 

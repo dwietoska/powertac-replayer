@@ -167,8 +167,10 @@
      <ui:define name="handlePush">
 		<p:socket onMessage="handleWholesaleAnalysisPushTsChoosen" channel="/averageClearingPriceTsChoosen" rendered="#{logParametersBean.isReplayerMode}" />
 		<p:socket onMessage="handleWholesaleAnalysisTsChoosenBackward" channel="/tsChoosenBackwardSafetyTs" rendered="#{logParametersBean.isReplayerMode}" />
-		<p:socket onMessage="handleWholesaleAnalysisPushTsChoosen" channel="/wholesaleavgpricepertimeslotExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
-		<p:socket onMessage="handleWholesaleAnalysisTsChoosenBackward" channel="/wholesaleavgpricepertimeslotBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleWholesaleAnalysisPushTsChoosen" channel="/wholesaleavgpricepertimeslotExtendedChangeTimeslot" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleWholesaleAnalysisTsChoosenBackward" channel="/wholesaleavgpricepertimeslotBackwardExtendedChangeTimeslot" rendered="#{logParametersBean.isReplayerMode}" />
+<!-- 	<p:socket onMessage="handleWholesaleAnalysisPushTsChoosen" channel="/wholesaleavgpricepertimeslotExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" /> -->
+<!-- 	<p:socket onMessage="handleWholesaleAnalysisTsChoosenBackward" channel="/wholesaleavgpricepertimeslotBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" /> -->
 	</ui:define>
 
 </ui:composition>

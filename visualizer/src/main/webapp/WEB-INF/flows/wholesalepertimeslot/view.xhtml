@@ -328,8 +328,10 @@
      <ui:define name="handlePush">
 		<p:socket onMessage="handleWholesaleMarketPushTsChoosen" channel="/marketTransactionsTsChoosen" rendered="#{logParametersBean.isReplayerMode}" />
 		<p:socket onMessage="handlePushTsChoosenBackward" channel="/tsChoosenBackwardSafetyTs" rendered="#{logParametersBean.isReplayerMode}" />
-		<p:socket onMessage="handleWholesaleMarketPushTsChoosen" channel="/wholesalepertimeslotExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
-		<p:socket onMessage="handlePushTsChoosenBackward" channel="/wholesalepertimeslotBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleWholesaleMarketPushTsChoosen" channel="/wholesalepertimeslotExtendedChangeTimeslot" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handlePushTsChoosenBackward" channel="/wholesalepertimeslotBackwardExtendedChangeTimeslot" rendered="#{logParametersBean.isReplayerMode}" />
+<!-- 	<p:socket onMessage="handleWholesaleMarketPushTsChoosen" channel="/wholesalepertimeslotExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" /> -->
+<!-- 	<p:socket onMessage="handlePushTsChoosenBackward" channel="/wholesalepertimeslotBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" /> -->
 	</ui:define>
 
 </ui:composition>

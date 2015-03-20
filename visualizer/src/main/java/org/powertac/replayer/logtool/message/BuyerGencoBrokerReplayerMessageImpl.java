@@ -16,7 +16,7 @@ import org.springframework.test.util.ReflectionTestUtils;
  * @author DWietoska
  */
 @Service("org.powertac.genco.Buyer")
-@Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
+//@Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class BuyerGencoBrokerReplayerMessageImpl implements ReplayerMessage {
 	
 	/**

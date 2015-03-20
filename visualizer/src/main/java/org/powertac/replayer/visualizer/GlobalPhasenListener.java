@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
  * @author DWietoska
  */
 @Component
-@Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
+//@Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class GlobalPhasenListener implements PhaseListener {
 	 
 	/**

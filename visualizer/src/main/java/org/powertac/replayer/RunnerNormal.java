@@ -27,7 +27,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  * @author DWietoska
  */
 @Service("RunnerNormal")
-@Scope(value = "session") // prototype
+//@Scope(value = "session") // prototype
 public class RunnerNormal extends RunnerGeneral implements DisposableBean {
 
 	/**
@@ -225,10 +225,10 @@ public class RunnerNormal extends RunnerGeneral implements DisposableBean {
     public class TimeslotRunnerNormalMode extends TimeslotRunnerGeneral 
     		implements Runnable {
 
-    	/**
-    	 * ServletRequestAttributes.
-    	 */
-    	private ServletRequestAttributes attributes;
+//    	/**
+//    	 * ServletRequestAttributes.
+//    	 */
+//    	private ServletRequestAttributes attributes;
     	
     	/**
     	 * New runner.
@@ -247,8 +247,8 @@ public class RunnerNormal extends RunnerGeneral implements DisposableBean {
         public TimeslotRunnerNormalMode(long clockRate, int timeslot, 
         		boolean isReloadPage) {
 
-        	attributes = (ServletRequestAttributes) RequestContextHolder
-        			.getRequestAttributes();
+//        	attributes = (ServletRequestAttributes) RequestContextHolder
+//        			.getRequestAttributes();
         	this.tickInterval = clockRate;
         	this.currentTimeslot = timeslot;
         	this.nextTick = timeslot - 1;
@@ -263,7 +263,7 @@ public class RunnerNormal extends RunnerGeneral implements DisposableBean {
 		@Override
 		public void run() {
 
-			RequestContextHolder.setRequestAttributes(attributes);
+//			RequestContextHolder.setRequestAttributes(attributes);
 			
 			clock = SimulationClockControlReplayer
 					.getInstance(logDao.getStartNumberTimeslot());
@@ -313,7 +313,7 @@ public class RunnerNormal extends RunnerGeneral implements DisposableBean {
 
 			isRunning = false;
 			
-			RequestContextHolder.resetRequestAttributes();
+//			RequestContextHolder.resetRequestAttributes();
 		}
     }
     

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
  * @author DWietoska
  */
 @Service("org.powertac.common.msg.SimStart")
-@Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
+//@Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class SimStartReplayerMessageImpl implements ReplayerMessage {
 
 	/**

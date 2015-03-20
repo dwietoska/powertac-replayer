@@ -44,7 +44,7 @@ import org.springframework.context.annotation.ScopedProxyMode;
  * @author DWietoska
  */
 @Service
-@Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
+//@Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class LogParametersBean implements Serializable {
 
 	/**
@@ -76,6 +76,11 @@ public class LogParametersBean implements Serializable {
 	 * Contains the session id.
 	 */
 	private String sessionId;
+	
+	/**
+	 * Name from uploaded state file.
+	 */
+	public static final String NAME_LOGFILE = "logfile";
 	
 	/**
 	 * Contains the choosen mode.
@@ -336,17 +341,19 @@ public class LogParametersBean implements Serializable {
 					// Download file and save on hard disk
 					this.chooseFile = null;
 					
-					FacesContext fc = FacesContext.getCurrentInstance();
-					HttpSession session = (HttpSession) fc.getExternalContext()
-							.getSession(false);
-					this.sessionId = session.getId();
+//					FacesContext fc = FacesContext.getCurrentInstance();
+//					HttpSession session = (HttpSession) fc.getExternalContext()
+//							.getSession(false);
+//					this.sessionId = session.getId();
 					
 					if (urlString.endsWith(END_OF_FILE_STATE)) {
 						
-						fileNew = new File(this.sessionId + END_OF_FILE_STATE);
+						fileNew = new File("Temp" + NAME_LOGFILE + END_OF_FILE_STATE);
+//						fileNew = new File(this.sessionId + END_OF_FILE_STATE);
 					} else {
 						
-						fileNew = new File(this.sessionId + END_OF_FILE_TAR);
+						fileNew = new File("Temp" + NAME_LOGFILE + END_OF_FILE_TAR);
+//						fileNew = new File(this.sessionId + END_OF_FILE_TAR);
 					}
 					
 					// Download File
@@ -525,8 +532,8 @@ public class LogParametersBean implements Serializable {
 
 			// State-File was uploaded.
 			try {
-				
-				processStateFile(Helper.PATH_LOG_FILES + sessionId + 
+				// sessionId 
+				processStateFile(Helper.PATH_LOG_FILES + NAME_LOGFILE + 
 						END_OF_FILE_STATE,
 						event.getFile().getFileName(), event.getFile()
 						.getInputstream());
@@ -540,8 +547,8 @@ public class LogParametersBean implements Serializable {
 
 			// Tar-Archive was uploaded.
 			try {
-				
-				processTarGzArchiv(Helper.PATH_LOG_FILES + this.sessionId +
+				// this.sessionId
+				processTarGzArchiv(Helper.PATH_LOG_FILES + NAME_LOGFILE +
 						END_OF_FILE_STATE, 
 						event.getFile().getInputstream());
 //				processTarGzArchiv(event.getFile().getInputstream());

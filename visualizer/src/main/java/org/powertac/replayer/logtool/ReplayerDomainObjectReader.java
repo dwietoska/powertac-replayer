@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service;
  * @author DWietoska
  */
 @Service
-@Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
+//@Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class ReplayerDomainObjectReader implements GameInitialization {
 
 	/**

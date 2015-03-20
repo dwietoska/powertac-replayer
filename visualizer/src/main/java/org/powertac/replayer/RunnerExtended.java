@@ -27,7 +27,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  * @author DWietoska
  */
 @Service("RunnerExtended")
-@Scope(value = "session") // prototype
+//@Scope(value = "session") // prototype
 public class RunnerExtended extends RunnerGeneral {
 	
 	/**
@@ -241,10 +241,10 @@ public class RunnerExtended extends RunnerGeneral {
     public class TimeslotRunnerExtendedMode extends TimeslotRunnerGeneral 
     		implements Runnable {
     	
-    	/**
-    	 * ServletRequestAttributes.
-    	 */
-    	private ServletRequestAttributes attributes;
+//    	/**
+//    	 * ServletRequestAttributes.
+//    	 */
+//    	private ServletRequestAttributes attributes;
     	 
     	/**
     	 * New runner.
@@ -264,9 +264,7 @@ public class RunnerExtended extends RunnerGeneral {
         		boolean isReloadPage) {
 
 //        	attributes = (ServletRequestAttributes) RequestContextHolder
-//        			.getRequestAttributes();
-        	attributes = (ServletRequestAttributes) RequestContextHolder
-        			.currentRequestAttributes();
+//        			.currentRequestAttributes();
         	this.tickInterval = clockRate;
         	this.currentTimeslot = timeslot;
         	this.nextTick = timeslot - 1;
@@ -281,9 +279,9 @@ public class RunnerExtended extends RunnerGeneral {
 		@Override
         public void run() {
 			
-			synchronized (object) {
-				RequestContextHolder.setRequestAttributes(attributes, true);
-			}
+//			synchronized (object) {
+//				RequestContextHolder.setRequestAttributes(attributes, true);
+//			}
 
             clock = SimulationClockControlReplayer
             		.getInstance(startNumberTimeslot);
@@ -342,7 +340,7 @@ public class RunnerExtended extends RunnerGeneral {
 			}
 
 			isRunning = false;
-			RequestContextHolder.resetRequestAttributes();
+//			RequestContextHolder.resetRequestAttributes();
 		}
     }
     
@@ -366,10 +364,10 @@ public class RunnerExtended extends RunnerGeneral {
         return end - start;
     }
 	
-	/**
-	 * Synchronization object.
-	 */
-	private Object object = new Object();
+//	/**
+//	 * Synchronization object.
+//	 */
+//	private Object object = new Object();
 	
 	/**
 	 * Reads and processes all data from log file.
@@ -378,27 +376,32 @@ public class RunnerExtended extends RunnerGeneral {
 	 */
 	public class ReadAllObjects extends Thread {
 		
-		private ServletRequestAttributes attributes;
+//		private ServletRequestAttributes attributes;
 		
 		public ReadAllObjects() {
-			attributes = (ServletRequestAttributes) RequestContextHolder
-					.currentRequestAttributes();
+//			attributes = (ServletRequestAttributes) RequestContextHolder
+//					.currentRequestAttributes();
 		}
 		
 		@Override
 		public void run() {
 
 //			System.out.println("Vor ReadAllObjects");
-			synchronized(object) {
-				RequestContextHolder.setRequestAttributes(attributes, true);
-			}
+//			synchronized(object) {
+//				RequestContextHolder.setRequestAttributes(attributes, true);
+//			}
 
-			String sessionId = attributes.getSessionId();
+//			String sessionId = attributes.getSessionId();
 //			System.out.println(sessionId);
 			
 			try {
 				
 				logDao.readAllObjects();
+				
+				// Send message
+				PushContext pushContext = PushContextFactory.getDefault()
+						.getPushContext();
+				pushContext.push("/dataComplete", "");
 			} catch (ErrorReadDomainObject e) {
 
 				String errorMessage = "";
@@ -411,8 +414,10 @@ public class RunnerExtended extends RunnerGeneral {
 				
 				PushContext pushContext = PushContextFactory.getDefault()
 						.getPushContext();		
-				pushContext.push("errorReadAllObjects" + sessionId, 
+				pushContext.push("errorReadAllObjects", 
 						errorMessage);
+//				pushContext.push("errorReadAllObjects" + sessionId, 
+//						errorMessage);
 			}
 			// logParametersBean
 			// .setTimeslotMaxValue(logDao.getEndNumberTimeslot());
@@ -423,7 +428,7 @@ public class RunnerExtended extends RunnerGeneral {
 			logParametersBean.setTimeslotMaxValue(logDao
 					.getNumberOfTimeslots());
 			
-			RequestContextHolder.resetRequestAttributes();
+//			RequestContextHolder.resetRequestAttributes();
 			
 //			System.out.println("Nach ReadAllObjects");
 		}

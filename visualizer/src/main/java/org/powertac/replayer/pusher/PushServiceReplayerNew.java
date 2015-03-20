@@ -60,7 +60,7 @@ import com.google.gson.reflect.TypeToken;
  * @author DWietoska
  */
 @Service
-@Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
+//@Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class PushServiceReplayerNew {
 	
 	/**
@@ -149,11 +149,11 @@ public class PushServiceReplayerNew {
 	 * @param params Old and new time slot.
 	 */
 	public void pushTimeslotsForCurrentView(int[] params) {
-	
+
 		String currentViewUri = this.logParametersBean.getChoosenViewName();	
 		String channelname = "/" + PLACEHOLDER_CHANNELNAME 
 				+ "ExtendedChangeTimeslot";
-		
+
 		Class<PushServiceReplayerNew> classPushServiceReplayerNew = 
 				PushServiceReplayerNew.class;
 		
@@ -194,15 +194,17 @@ public class PushServiceReplayerNew {
 	 */
 	public void push(String channel, String json) {
 
-		if (this.logParametersBean.getSessionId() != null) {
+//		if (this.logParametersBean.getSessionId() != null) {
 			
-			StringBuilder channelId = new StringBuilder(channel);
-			channelId.append(this.logParametersBean.getSessionId());
+//			StringBuilder channelId = new StringBuilder(channel);
+//			channelId.append(this.logParametersBean.getSessionId());
 			
 			PushContext pushContext = PushContextFactory.getDefault()
 					.getPushContext();		
-			pushContext.push(channelId.toString(), json);
-		}
+//			pushContext.push(channelId.toString(), json);	
+
+			pushContext.push(channel, json);
+//		}
 	}
 	
 	/**
@@ -1727,8 +1729,7 @@ public class PushServiceReplayerNew {
 	 * @param params Old and new time slot
 	 */
 	public void pushFinancecumulative(String currentViewName,
-			String channelname, int[] params) {
-		
+			String channelname, int[] params) {	
 		pushFinance(currentViewName, channelname, params);
 	}
 	
@@ -1754,7 +1755,7 @@ public class PushServiceReplayerNew {
 	 */
 	public void pushFinance(String currentViewName,
 			String channelname, int[] params) {
-		
+
 		String json = null;
 
 		if (!(params[0] >= params[1])) {

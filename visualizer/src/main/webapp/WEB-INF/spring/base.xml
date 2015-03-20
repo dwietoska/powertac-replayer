@@ -138,7 +138,8 @@
 		</constructor-arg>
 	</bean>
 	
-	<bean id="appearanceListBeanReplayer" class="org.powertac.replayer.data.AppearanceListBeanReplayer" scope="session">
+<!-- 	scope="session" -->
+	<bean id="appearanceListBeanReplayer" class="org.powertac.replayer.data.AppearanceListBeanReplayer">
 		<constructor-arg name="appereanceList">
 			<list>
 				<bean class="org.powertac.visualizer.domain.Appearance">

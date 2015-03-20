@@ -357,6 +357,7 @@
 
      <ui:define name="handlePush">
 		<p:socket onMessage="handleTsChoosen" channel="/tariffAnalysisTsChoosen" rendered="#{logParametersBean.isReplayerMode}" />
-		<p:socket onMessage="handleTsChoosen" channel="/tariffanalysisExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleTsChoosen" channel="/tariffanalysisExtendedChangeTimeslot" rendered="#{logParametersBean.isReplayerMode}" />
+<!-- 	<p:socket onMessage="handleTsChoosen" channel="/tariffanalysisExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" /> -->
 	</ui:define>
 </ui:composition>

@@ -256,8 +256,10 @@
 
      <ui:define name="handlePush">
 		<p:socket onMessage="handleCustomerModelsPushTsChoosen" channel="/customerModelsTsChoosen" rendered="#{logParametersBean.isReplayerMode}" />
-	    <p:socket onMessage="handleCustomerModelsPushTsChoosen" channel="/customermodelsExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
-	    <p:socket onMessage="handleCustomerModelsPushTsChoosenBackward" channel="/customermodelsBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+	    <p:socket onMessage="handleCustomerModelsPushTsChoosen" channel="/customermodelsExtendedChangeTimeslot" rendered="#{logParametersBean.isReplayerMode}" />
+	    <p:socket onMessage="handleCustomerModelsPushTsChoosenBackward" channel="/customermodelsBackwardExtendedChangeTimeslot" rendered="#{logParametersBean.isReplayerMode}" />
+<!-- 	<p:socket onMessage="handleCustomerModelsPushTsChoosen" channel="/customermodelsExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" /> -->
+<!-- 	<p:socket onMessage="handleCustomerModelsPushTsChoosenBackward" channel="/customermodelsBackwardExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" /> -->
 	</ui:define>
 
 </ui:composition>

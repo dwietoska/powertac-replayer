@@ -100,8 +100,8 @@
 			style="width: 650px; height: 10px; padding-left: 10px; margin: auto;" />
 			
 		<p:socket onMessage="generateRanking" channel="/ranking" rendered="#{!logParametersBean.isReplayerMode}" />
-		<p:socket onMessage="generateRanking" channel="/rankingExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
-		
+		<p:socket onMessage="generateRanking" channel="/rankingExtendedChangeTimeslot" rendered="#{logParametersBean.isReplayerMode}" />
+<!-- 		<p:socket onMessage="generateRanking" channel="/rankingExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" /> -->
 	</ui:define>
 
 	<ui:define name="rowcontent"></ui:define>

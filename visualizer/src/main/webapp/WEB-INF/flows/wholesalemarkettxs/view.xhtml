@@ -72,6 +72,7 @@
 
      <ui:define name="handlePush">
 		<p:socket onMessage="handleWholesaleMarketPushTsChoosen" channel="/marketAllTransactionsTsChoosen" rendered="#{logParametersBean.isReplayerMode}" />
-		<p:socket onMessage="handleWholesaleMarketPushTsChoosen" channel="/wholesalemarkettxsExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" />
+		<p:socket onMessage="handleWholesaleMarketPushTsChoosen" channel="/wholesalemarkettxsExtendedChangeTimeslot" rendered="#{logParametersBean.isReplayerMode}" />
+<!-- 	<p:socket onMessage="handleWholesaleMarketPushTsChoosen" channel="/wholesalemarkettxsExtendedChangeTimeslot#{session.id}" rendered="#{logParametersBean.isReplayerMode}" /> -->
 	</ui:define>
 </ui:composition>
