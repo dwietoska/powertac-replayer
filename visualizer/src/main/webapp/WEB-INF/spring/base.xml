@@ -285,8 +285,9 @@
 		scope="request" />
 	<bean id="wholesaleMarketBeanReplayer" class="org.powertac.replayer.user.WholesaleMarketBeanReplayer"
 		scope="request" />
-    <bean id="customerModelBeanReplayer" class="org.powertac.replayer.user.CustomerModelBeanReplayer"
-		scope="session" />
+<!--     <bean id="customerModelBeanReplayer" class="org.powertac.replayer.user.CustomerModelBeanReplayer" -->
+<!-- 		scope="session" /> -->
+    <bean id="customerModelBeanReplayer" class="org.powertac.replayer.user.CustomerModelBeanReplayer" />
 	<bean id="rankingBeanReplayer" class="org.powertac.replayer.user.RankingBeanReplayer"
 		scope="request" />
 </beans>
