@@ -185,11 +185,14 @@
 		
 		function completeRunInit() {		
 			readAllDataAsync();
-// 			setTimeout(window.location.reload.bind(window.location), 5);
 		}
 		
 		function handleErrorReadAllObjects(data) {
 			errorReadFile([{name:'paramErrorReadAllObject', value:data}]);
+		}
+		
+		function handleInfinitiveNanMessage() {
+			readInfinitiveNanEntry();
 		}
 	</script>
  
@@ -361,6 +364,10 @@
 					<p:remoteCommand name="errorReadFile"
 						update="formLog:messagesPrimefaces, formLog:panelGroupTopReplayerContent, formLog:panelGroupExtendedModeReplayerContent, formLog:buttons"
 						action="#{logParametersBean.errorReadFile}"/>
+						
+					<p:remoteCommand name="readInfinitiveNanEntry"
+						update="formLog:messagesPrimefaces"
+						action="#{logParametersBean.readInfinitiveNanEntry}"/>
 						
 					<p:remoteCommand name="changeProgressBarTemplate"
 									 actionListener="#{logParametersBean.setLabelTemplateProgressBar('')}" 
@@ -754,6 +761,8 @@
 <!-- <p:socket onMessage="handleErrorReadAllObjects" channel="/errorReadAllObjects#{session.id}" /> -->
 
 <!-- <p:socket onMessage="handleUpdateProgressBarSlider" channel="/updateProgressBar#{session.id}" rendered="#{logParametersBean.isReplayerMode and logParametersBean.isExtendedMode}"  /> -->
+
+    <p:socket onMessage="handleInfinitiveNanMessage" channel="/infinitiveNanMessage" />
 
 	<script type="text/javascript">
 		function handleChat(data) {

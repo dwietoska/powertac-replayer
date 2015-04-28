@@ -1044,6 +1044,19 @@ public class LogParametersBean implements Serializable {
 				errorMsg));
 	}
 	
+	/**
+	 * The thread which sends all data calls this method 
+	 * when an infinitive, -infinitive or nan entry occurred. 
+	 */
+	public void readInfinitiveNanEntry() {
+				
+		FacesContext context = FacesContext.getCurrentInstance();
+		context.addMessage(null, new FacesMessage(
+				FacesMessage.SEVERITY_INFO, "Read infinitive entry", 
+				"The selected log file contains infinitive or -infinitive entries. "
+				+ "These entries are replaced by the value 0."));
+	}
+	
     /** Getter and Setter methods.
      */
     public int getTimeslot() {

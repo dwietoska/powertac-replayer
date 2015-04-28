@@ -6,7 +6,7 @@ The project "Replayer" was created by D. Wietoska under supervision of W. Conen 
 
 It is a web front-end which can replay finished games of the simulation platform Power TAC (http://www.powertac.org/).
 
-The replayer was based on the execellent Power TAC visualizer (https://github.com/powertac/visualizer).
+The replayer was based on the excellent Power TAC visualizer (https://github.com/powertac/visualizer).
 
 The package "org.powertac.replayer" and its subdirectories contain the new developed replayer classes.
 The package "org.powertac.visualizer" and its subdirectories contain the visualizer classes from Power TAC visualizer which was used in replayer package.

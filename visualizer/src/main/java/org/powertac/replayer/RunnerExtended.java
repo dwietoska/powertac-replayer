@@ -386,13 +386,11 @@ public class RunnerExtended extends RunnerGeneral {
 		@Override
 		public void run() {
 
-//			System.out.println("Vor ReadAllObjects");
 //			synchronized(object) {
 //				RequestContextHolder.setRequestAttributes(attributes, true);
 //			}
 
 //			String sessionId = attributes.getSessionId();
-//			System.out.println(sessionId);
 			
 			try {
 				
@@ -429,8 +427,6 @@ public class RunnerExtended extends RunnerGeneral {
 					.getNumberOfTimeslots());
 			
 //			RequestContextHolder.resetRequestAttributes();
-			
-//			System.out.println("Nach ReadAllObjects");
 		}
 	}
 	

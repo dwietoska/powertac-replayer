@@ -10,6 +10,8 @@ import org.powertac.du.DefaultBroker;
 import org.powertac.logtool.common.NewObjectListener;
 import org.powertac.replayer.GameInitialization;
 import org.powertac.replayer.StrategyFactory;
+import org.primefaces.push.PushContext;
+import org.primefaces.push.PushContextFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -70,6 +72,8 @@ public class ReplayerDomainObjectReader implements GameInitialization {
 	public ReplayerDomainObjectReader() {
 		super();
 
+		sendInfinitiveNanMessage = false;
+		
 		// Set up the interface defaults
 		ifImplementors = new HashMap<Class<?>, Class<?>>();
 		ifImplementors.put(List.class, ArrayList.class);
@@ -106,11 +110,14 @@ public class ReplayerDomainObjectReader implements GameInitialization {
 		this.newObjectListeners.clear();
 	}
 	  
+	private boolean sendInfinitiveNanMessage;
+	
 	/**
 	 * A new replaying has been started.  
 	 */
 	@Override
 	public void newGame() {
+		sendInfinitiveNanMessage = false;
 		clearObjectListener();
 	}
 
@@ -128,6 +135,26 @@ public class ReplayerDomainObjectReader implements GameInitialization {
 	    if (ignores.contains(tokens[0])) {
 	    	
 	      return null;
+	    }
+	    
+	    // Replace infinitive or nan entries.
+	    for (int i = 0; i < tokens.length; i++) {
+	    	if (tokens[i] != null && (
+	    			tokens[i].toLowerCase().equals("infinity") || 
+	    			tokens[i].toLowerCase().equals("-infinity") 
+	    			)) { // ||  tokens[i].toLowerCase().equals("nan")
+
+	    		tokens[i] = "0";
+	    		
+				if (!sendInfinitiveNanMessage) {
+					
+					PushContext pushContext = PushContextFactory.getDefault()
+							.getPushContext();
+					pushContext.push("infinitiveNanMessage", "");
+
+					sendInfinitiveNanMessage = true;
+				}
+	    	}
 	    }
 	    
 	    // Ascertain right message-class.
